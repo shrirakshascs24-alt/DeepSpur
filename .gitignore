@@ -4,20 +4,20 @@ node_modules/
 __pycache__/
 *.pyc
 
-# Datasets & Model Weights
-data/
-*.pth
-*.pt
-*.bin
-*.tar.gz
-checkpoints/
-
 # OS & Environment Files
 .DS_Store
 .env
 .env.local
-results/
-*.pth
-checkpoints/
+
+# Datasets & Heavy Artifacts
 data/
-results/
+checkpoints/
+results/*
+!results/.gitkeep
+
+# Model Weights
+*.pth
+*.pt
+*.bin
+*.tar.gz
+models/*.pth
