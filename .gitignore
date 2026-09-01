@@ -1,0 +1,13 @@
+# Dataset
+data/waterbirds/
+
+# Trained model files
+models/*.pth
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Results
+results/*
+!results/.gitkeep
