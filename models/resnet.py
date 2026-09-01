@@ -2,20 +2,18 @@ import torch
 import torch.nn as nn
 from torchvision.models import resnet50, ResNet50_Weights
 
-def get_baseline_model(num_classes=2):
-    # Load PyTorch's default pretrained ImageNet weights
-    model = resnet50(weights=ResNet50_Weights.DEFAULT)
-    
-    # Replace final layer for binary classification (Landbird vs Waterbird)
-    in_features = model.fc.in_features
-    model.fc = nn.Linear(in_features, num_classes)
-    
-    return model
+class BaselineResNet50(nn.Module):
+    def __init__(self, num_classes: int = 2, pretrained: bool = True):
+        super(BaselineResNet50, self).__init__()
+        weights = ResNet50_Weights.DEFAULT if pretrained else None
+        self.model = resnet50(weights=weights)
+        
+        # Replace final classification head
+        in_features = self.model.fc.in_features
+        self.model.fc = nn.Linear(in_features, num_classes)
 
-if __name__ == "__main__":
-    # Test script execution with dummy image tensor
-    model = get_baseline_model()
-    fake_image = torch.randn(1, 3, 224, 224)
-    output = model(fake_image)
-    print("DeepSpur ResNet-50 initialized successfully!")
-    print("Output tensor shape:", output.shape)  # Expected: [1, 2]
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.model(x)
+
+def get_baseline_model(num_classes: int = 2, pretrained: bool = True) -> nn.Module:
+    return BaselineResNet50(num_classes=num_classes, pretrained=pretrained)

@@ -1,49 +1,58 @@
-import sys
-from pathlib import Path
-
-# Add project root directory to Python path
-sys.path.append(str(Path(__file__).resolve().parent.parent))
-
+import os
+import json
 import torch
+import torch.nn.functional as F
+from PIL import Image
+from torchvision import transforms
 
-def evaluate_groups(model, dataloader, device="cpu"):
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+eval_transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+])
+
+def predict(image: Image.Image, model: torch.nn.Module) -> dict:
     """
-    Evaluates baseline model across individual group IDs (G0-G3) to compute
-    Average Accuracy and Worst-Group Accuracy (WGA).
+    Inference interface returning predicted class and softmax confidence.
     """
     model.eval()
     model.to(device)
     
-    group_correct = {}
-    group_total = {}
+    img_tensor = eval_transform(image).unsqueeze(0).to(device)
     
     with torch.no_grad():
-        for batch in dataloader:
-            if len(batch) == 3:
-                images, labels, group_ids = batch
-            else:
-                images, labels = batch
-                group_ids = torch.zeros_like(labels)
-                
-            images, labels = images.to(device), labels.to(device)
-            outputs = model(images)
-            _, preds = torch.max(outputs, 1)
-            
-            for pred, label, g_id in zip(preds, labels, group_ids):
-                g_item = g_id.item()
-                if g_item not in group_correct:
-                    group_correct[g_item] = 0
-                    group_total[g_item] = 0
-                    
-                group_total[g_item] += 1
-                if pred == label:
-                    group_correct[g_item] += 1
-                    
-    group_accuracies = {g: group_correct[g] / group_total[g] for g in group_total}
-    worst_group_acc = min(group_accuracies.values()) if group_accuracies else 0.0
-    overall_acc = sum(group_correct.values()) / sum(group_total.values()) if group_total else 0.0
-    
-    return overall_acc, worst_group_acc, group_accuracies
+        outputs = model(img_tensor)
+        probs = F.softmax(outputs, dim=1)
+        confidence, prediction = torch.max(probs, 1)
+        
+    return {
+        "prediction": int(prediction.item()),
+        "confidence": float(confidence.item())
+    }
 
-if __name__ == "__main__":
-    print("Evaluation module loaded successfully.")
+def evaluate_test_set(model: torch.nn.Module, test_loader, output_file: str = "results/baseline_results.json"):
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    model.eval()
+    model.to(device)
+    
+    results = []
+    with torch.no_grad():
+        for i, (images, labels) in enumerate(test_loader):
+            images = images.to(device)
+            outputs = model(images)
+            probs = F.softmax(outputs, dim=1)
+            confidences, predictions = torch.max(probs, 1)
+            
+            for pred, conf, label in zip(predictions, confidences, labels):
+                results.append({
+                    "true_label": int(label.item()),
+                    "prediction": int(pred.item()),
+                    "confidence": float(conf.item())
+                })
+
+    with open(output_file, "w") as f:
+        json.dump(results, f, indent=2)
+        
+    print(f"Saved evaluation predictions to {output_file}")

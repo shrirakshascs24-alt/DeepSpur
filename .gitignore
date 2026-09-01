@@ -1,22 +1,23 @@
-# Byte-compiled / optimized files
+# Dependencies & Build Output
+node_modules/
+.next/
 __pycache__/
-*.py[cod]
-*$py.class
+*.pyc
 
-# PyTorch Checkpoints & Large Models (Keep repo lightweight)
+# Datasets & Model Weights
+data/
 *.pth
 *.pt
-*.onnx
-__pycache__/
-results/logs/
+*.bin
+*.tar.gz
+checkpoints/
 
-# Environment & Logs
-.env
-venv/
-env/
-results/logs/
-*.log
-
-# IDE & System Files
-.vscode/
+# OS & Environment Files
 .DS_Store
+.env
+.env.local
+results/
+*.pth
+checkpoints/
+data/
+results/
