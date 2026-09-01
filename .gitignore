@@ -1,13 +1,23 @@
-# Dataset
-data/waterbirds/
-
-# Trained model files
-models/*.pth
-
-# Python cache
+# Dependencies & Build Output
+node_modules/
+.next/
 __pycache__/
 *.pyc
 
-# Results
+# OS & Environment Files
+.DS_Store
+.env
+.env.local
+
+# Datasets & Heavy Artifacts
+data/
+checkpoints/
 results/*
 !results/.gitkeep
+
+# Model Weights
+*.pth
+*.pt
+*.bin
+*.tar.gz
+models/*.pth
