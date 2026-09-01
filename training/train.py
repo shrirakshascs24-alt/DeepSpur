@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 import os
 import torch
 import torch.nn as nn
@@ -73,7 +73,7 @@ def train_baseline(
             best_path = os.path.join(save_dir, "baseline_best.pth")
             torch.save(model.state_dict(), best_path)
             print(f"Saved new best model checkpoint (Val Acc: {val_acc:.4f}) -> {best_path}")
-=======
+
 import sys
 import yaml
 from pathlib import Path
@@ -168,4 +168,4 @@ def run_pipeline():
 
 if __name__ == "__main__":
     run_pipeline()
->>>>>>> origin/main
+
