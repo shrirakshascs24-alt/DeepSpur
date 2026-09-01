@@ -1,0 +1,22 @@
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# PyTorch Checkpoints & Large Models (Keep repo lightweight)
+*.pth
+*.pt
+*.onnx
+__pycache__/
+results/logs/
+
+# Environment & Logs
+.env
+venv/
+env/
+results/logs/
+*.log
+
+# IDE & System Files
+.vscode/
+.DS_Store
