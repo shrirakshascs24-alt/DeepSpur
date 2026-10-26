@@ -1,22 +1,33 @@
-# Byte-compiled / optimized files
+# Python cache
 __pycache__/
 *.py[cod]
 *$py.class
 
-# PyTorch Checkpoints & Large Models (Keep repo lightweight)
+# Dependencies and build output
+node_modules/
+.next/
+
+# Environment and logs
+.env
+.env.local
+venv/
+env/
+*.log
+results/logs/
+
+# IDE and OS
+.vscode/
+.DS_Store
+
+# Downloaded Waterbirds dataset (keep utility code and metadata)
+ /data/waterbird_complete95_forest2water2/
+
+# Model weights and large artifacts
 *.pth
 *.pt
 *.onnx
-__pycache__/
-results/logs/
+*.bin
+*.tar.gz
 
-# Environment & Logs
-.env
-venv/
-env/
-results/logs/
-*.log
-
-# IDE & System Files
-.vscode/
-.DS_Store
+# Keep results directory placeholder if present
+!results/.gitkeep
