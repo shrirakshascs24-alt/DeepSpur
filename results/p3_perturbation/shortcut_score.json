@@ -1,0 +1,10 @@
+{
+  "images_processed": 5794,
+  "matched_background_accuracy": 0.9855022437003798,
+  "mismatched_background_accuracy": 0.7273041076976182,
+  "matched_minus_mismatched_accuracy_gap": 0.25819813600276154,
+  "prediction_flip_rate_after_blur": 0.04142216085605799,
+  "mean_absolute_true_class_probability_change": 0.04304340256831673,
+  "heuristic_shortcut_dependence_score_0_to_100": 14.981014842940976,
+  "note": "Exploratory heuristic, not a validated metric. Blur-mask imperfections mean this does not prove causal background dependence."
+}

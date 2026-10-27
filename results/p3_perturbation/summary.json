@@ -1,0 +1,72 @@
+﻿{
+    "experiment":  "Waterbirds background-blur pilot",
+    "checkpoint":  "D:\\DeepSpur\\DeepSpur\\models\\baseline_resnet50.pth",
+    "test_metadata":  "D:\\DeepSpur\\DeepSpur\\data\\waterbirds\\test.json",
+    "device":  "cpu",
+    "max_per_group":  0,
+    "seed":  42,
+    "processed_images":  5794,
+    "errors_count":  0,
+    "class_mapping":  {
+                          "0":  "landbird",
+                          "1":  "waterbird"
+                      },
+    "background_mapping":  {
+                               "0":  "land",
+                               "1":  "water"
+                           },
+    "intervention":  "Approximate central-ellipse foreground preserved; remaining image blurred. Mask may include background objects or remove bird regions.",
+    "subgroups":  [
+                      {
+                          "subgroup":  "landbird_on_land",
+                          "n":  2255,
+                          "original_accuracy":  0.9942350332594235,
+                          "perturbed_accuracy":  0.9924611973392461,
+                          "accuracy_change":  -0.0017738359201774356,
+                          "prediction_flip_rate":  0.004434589800443459,
+                          "mean_true_class_probability_original":  0.990220209321383,
+                          "mean_true_class_probability_perturbed":  0.9882762644445098,
+                          "mean_true_class_probability_change":  -0.0019439448655155507,
+                          "mean_mask_foreground_fraction":  0.58296799659729
+                      },
+                      {
+                          "subgroup":  "landbird_on_water",
+                          "n":  2255,
+                          "original_accuracy":  0.7534368070953437,
+                          "perturbed_accuracy":  0.7685144124168515,
+                          "accuracy_change":  0.015077605321507814,
+                          "prediction_flip_rate":  0.07450110864745012,
+                          "mean_true_class_probability_original":  0.741687156687732,
+                          "mean_true_class_probability_perturbed":  0.7549850562166867,
+                          "mean_true_class_probability_change":  0.0132978996420062,
+                          "mean_mask_foreground_fraction":  0.58296799659729
+                      },
+                      {
+                          "subgroup":  "waterbird_on_land",
+                          "n":  642,
+                          "original_accuracy":  0.6355140186915887,
+                          "perturbed_accuracy":  0.6728971962616822,
+                          "accuracy_change":  0.03738317757009346,
+                          "prediction_flip_rate":  0.0778816199376947,
+                          "mean_true_class_probability_original":  0.6124211834279536,
+                          "mean_true_class_probability_perturbed":  0.6485104487021682,
+                          "mean_true_class_probability_change":  0.03608926522935218,
+                          "mean_mask_foreground_fraction":  0.58296799659729
+                      },
+                      {
+                          "subgroup":  "waterbird_on_water",
+                          "n":  642,
+                          "original_accuracy":  0.9548286604361371,
+                          "perturbed_accuracy":  0.9485981308411215,
+                          "accuracy_change":  -0.006230529595015577,
+                          "prediction_flip_rate":  0.018691588785046728,
+                          "mean_true_class_probability_original":  0.9460204662178636,
+                          "mean_true_class_probability_perturbed":  0.9451360242977264,
+                          "mean_true_class_probability_change":  -0.0008844419958435215,
+                          "mean_mask_foreground_fraction":  0.58296799659729
+                      }
+                  ],
+    "errors":  [
+
+               ]
+}
