@@ -10,3 +10,24 @@ export interface ModelMetricsResponse {
   worstGroupAccuracy: number;
   groups: GroupMetric[];
 }
+
+export interface TestSubgroupStat {
+  id: number;
+  name: string;
+  shortName: string;
+  label: number;
+  context: number;
+  count: number;
+  percentage: number;
+}
+
+export interface DatasetStatsResponse {
+  datasetName: string;
+  totalCorpus: number;
+  splits: {
+    train: number;
+    validation: number;
+    test: number;
+  };
+  testSubgroups: TestSubgroupStat[];
+}
