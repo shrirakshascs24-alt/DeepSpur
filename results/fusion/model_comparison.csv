@@ -1,0 +1,4 @@
+﻿model,architecture,params_millions,overall_accuracy_pct,worst_group_accuracy_pct,worst_group_id,macro_f1_pct,checkpoint_size_mb
+Baseline ResNet-50,ResNet-50,23.51,85.64,63.55,Group 1 or 2,84.1,90.0
+Corrected ResNet-50,ResNet-50 (Group Fine-Tuned),23.51,89.33,64.8,Group 2 (Water / Land),88.5,90.0
+Fusion (ResNet50 + EfficientNet-B0),ResNet50 + EfficientNet-B0 Fusion (MLP Head),29.22,88.54,77.88,Group 2 (Water / Land),84.61,112.08

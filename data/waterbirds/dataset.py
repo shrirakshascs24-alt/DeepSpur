@@ -27,9 +27,14 @@ class WaterbirdsDataset(Dataset):
 
         # Default image directory
         if image_root is None:
+            project_root = os.path.dirname(
+                os.path.dirname(self.base_dir)
+               
+            )
             image_root = os.path.join(
-                self.base_dir,
-                "waterbird_complete95_forest2water2"
+                 project_root,
+                 "data",
+                 "waterbird_complete95_forest2water2"
             )
 
         self.image_root = image_root

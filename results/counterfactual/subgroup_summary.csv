@@ -1,0 +1,5 @@
+﻿group_id,group_name,n_attempted,n_successful,baseline_flip_count,baseline_flip_rate,baseline_mean_true_class_prob_change,corrected_flip_count,corrected_flip_rate,corrected_mean_true_class_prob_change,flip_rate_reduction
+0,Landbird on Land,186,141,11,0.078,-0.096,8,0.0567,-0.0352,0.0213
+1,Landbird on Water,190,156,19,0.1218,0.1591,9,0.0577,0.0707,0.0641
+2,Waterbird on Land,94,62,12,0.1935,0.1721,6,0.0968,0.0062,0.0968
+3,Waterbird on Water,90,67,24,0.3582,-0.3534,12,0.1791,-0.1967,0.1791

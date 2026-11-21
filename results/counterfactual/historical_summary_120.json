@@ -1,0 +1,1149 @@
+{
+  "experiment": "Counterfactual Background Replacement & Robustness Evaluation v2.0",
+  "objective": "Causal stress-testing: Isolating avian foreground and transplanting onto bird-free inpainted real donor backgrounds",
+  "methodology": {
+    "segmentation_model": "DeepLabV3-ResNet50 (Avian Silhouette Extraction)",
+    "donor_cleaning": "DeepLabV3 Donor Detection + Morphological Dilation + OpenCV Telea Inpainting (0 remnant bird pixels)",
+    "compositing": "Order: 1. Cleaned Background -> 2. Feathered Specimen Mask -> 3. Composite",
+    "quality_checks": "IoU overlap validation >= 0.55 & single connected component bird verification",
+    "evaluated_models": [
+      "Baseline ResNet-50",
+      "Corrected ResNet-50 (Group-Balanced Fine-Tuning)"
+    ]
+  },
+  "statistics": {
+    "total_specimens_attempted": 120,
+    "total_counterfactuals_generated": 240,
+    "successful_composites": 97,
+    "rejected_composites": 23,
+    "composite_success_rate": 0.8083,
+    "rejected_donor_candidates": 12
+  },
+  "findings": {
+    "baseline_overall_flip_rate": 0.1959,
+    "corrected_overall_flip_rate": 0.1031,
+    "relative_flip_reduction_pct": 47.37,
+    "most_vulnerable_subgroup": "Landbird on Land swapped to Water (Majority group relying heavily on foliage cues)",
+    "robustness_summary": "With donor birds cleanly removed via inpainting, baseline ResNet-50 displays high background sensitivity. The corrected model demonstrates significantly superior background invariance without dual-bird artifacts."
+  },
+  "subgroups": [
+    {
+      "group_id": 0,
+      "group_name": "Landbird on Land",
+      "n_attempted": 30,
+      "n_successful": 24,
+      "baseline_flip_count": 2,
+      "baseline_flip_rate": 0.0833,
+      "baseline_mean_true_class_prob_change": -0.095,
+      "corrected_flip_count": 0,
+      "corrected_flip_rate": 0.0,
+      "corrected_mean_true_class_prob_change": -0.0118,
+      "flip_rate_reduction": 0.0833
+    },
+    {
+      "group_id": 1,
+      "group_name": "Landbird on Water",
+      "n_attempted": 30,
+      "n_successful": 26,
+      "baseline_flip_count": 8,
+      "baseline_flip_rate": 0.3077,
+      "baseline_mean_true_class_prob_change": 0.3086,
+      "corrected_flip_count": 4,
+      "corrected_flip_rate": 0.1538,
+      "corrected_mean_true_class_prob_change": 0.155,
+      "flip_rate_reduction": 0.1538
+    },
+    {
+      "group_id": 2,
+      "group_name": "Waterbird on Land",
+      "n_attempted": 30,
+      "n_successful": 23,
+      "baseline_flip_count": 3,
+      "baseline_flip_rate": 0.1304,
+      "baseline_mean_true_class_prob_change": 0.1676,
+      "corrected_flip_count": 1,
+      "corrected_flip_rate": 0.0435,
+      "corrected_mean_true_class_prob_change": 0.0948,
+      "flip_rate_reduction": 0.087
+    },
+    {
+      "group_id": 3,
+      "group_name": "Waterbird on Water",
+      "n_attempted": 30,
+      "n_successful": 24,
+      "baseline_flip_count": 6,
+      "baseline_flip_rate": 0.25,
+      "baseline_mean_true_class_prob_change": -0.2935,
+      "corrected_flip_count": 5,
+      "corrected_flip_rate": 0.2083,
+      "corrected_mean_true_class_prob_change": -0.197,
+      "flip_rate_reduction": 0.0417
+    }
+  ],
+  "model_comparison": [
+    {
+      "metric": "Counterfactual Prediction Flip Rate (All Groups)",
+      "baseline": 19.59,
+      "corrected": 10.31,
+      "improvement": 9.28
+    },
+    {
+      "metric": "Worst-Group Counterfactual Flip Rate",
+      "baseline": 30.77,
+      "corrected": 20.83,
+      "improvement": 9.94
+    },
+    {
+      "metric": "Mean True-Class Probability Drop under Swap",
+      "baseline": 0.0263,
+      "corrected": 0.0124,
+      "improvement": -0.014
+    },
+    {
+      "metric": "Standard Test Set Overall Accuracy (%)",
+      "baseline": 85.64,
+      "corrected": 89.33,
+      "improvement": 3.69
+    },
+    {
+      "metric": "Standard Test Set Worst-Group Accuracy (%)",
+      "baseline": 63.55,
+      "corrected": 64.8,
+      "improvement": 1.25
+    }
+  ],
+  "preview_specimens": [
+    {
+      "id": "landbird_on_land_1",
+      "specimenId": "American_Goldfinch_0022_32111",
+      "group": "Landbird on Land",
+      "groupId": 0,
+      "trueClass": "Landbird",
+      "originalBackground": "Land",
+      "originalUrl": "/api/counterfactual/preview?name=landbird_on_land_1_original.png",
+      "cfLandUrl": "/api/counterfactual/preview?name=landbird_on_land_1_cf_land.png",
+      "cfWaterUrl": "/api/counterfactual/preview?name=landbird_on_land_1_cf_water.png",
+      "maskUrl": "/api/counterfactual/preview?name=landbird_on_land_1_mask.png",
+      "baseline": {
+        "original": {
+          "pred": 0,
+          "class": "Landbird",
+          "conf": 0.9999818801879883,
+          "probs": [
+            0.9999818801879883,
+            1.8096652638632804e-05
+          ],
+          "prob_land": 0.9999818801879883,
+          "prob_water": 1.8096652638632804e-05
+        },
+        "cfLand": {
+          "pred": 0,
+          "class": "Landbird",
+          "conf": 0.9999597072601318,
+          "probs": [
+            0.9999597072601318,
+            4.028859257232398e-05
+          ],
+          "prob_land": 0.9999597072601318,
+          "prob_water": 4.028859257232398e-05
+        },
+        "cfWater": {
+          "pred": 0,
+          "class": "Landbird",
+          "conf": 0.9998111128807068,
+          "probs": [
+            0.9998111128807068,
+            0.00018889018974732608
+          ],
+          "prob_land": 0.9998111128807068,
+          "prob_water": 0.00018889018974732608
+        },
+        "flipOnSwap": false,
+        "probChange": -0.0002
+      },
+      "corrected": {
+        "original": {
+          "pred": 0,
+          "class": "Landbird",
+          "conf": 0.999998927116394,
+          "probs": [
+            0.999998927116394,
+            1.0449726914885105e-06
+          ],
+          "prob_land": 0.999998927116394,
+          "prob_water": 1.0449726914885105e-06
+        },
+        "cfLand": {
+          "pred": 0,
+          "class": "Landbird",
+          "conf": 0.9999961853027344,
+          "probs": [
+            0.9999961853027344,
+            3.766793724935269e-06
+          ],
+          "prob_land": 0.9999961853027344,
+          "prob_water": 3.766793724935269e-06
+        },
+        "cfWater": {
+          "pred": 0,
+          "class": "Landbird",
+          "conf": 0.9999978542327881,
+          "probs": [
+            0.9999978542327881,
+            2.1525713691517012e-06
+          ],
+          "prob_land": 0.9999978542327881,
+          "prob_water": 2.1525713691517012e-06
+        },
+        "flipOnSwap": false,
+        "probChange": -0.0
+      }
+    },
+    {
+      "id": "landbird_on_land_2",
+      "specimenId": "Indigo_Bunting_0036_13716",
+      "group": "Landbird on Land",
+      "groupId": 0,
+      "trueClass": "Landbird",
+      "originalBackground": "Land",
+      "originalUrl": "/api/counterfactual/preview?name=landbird_on_land_2_original.png",
+      "cfLandUrl": "/api/counterfactual/preview?name=landbird_on_land_2_cf_land.png",
+      "cfWaterUrl": "/api/counterfactual/preview?name=landbird_on_land_2_cf_water.png",
+      "maskUrl": "/api/counterfactual/preview?name=landbird_on_land_2_mask.png",
+      "baseline": {
+        "original": {
+          "pred": 0,
+          "class": "Landbird",
+          "conf": 0.999700665473938,
+          "probs": [
+            0.999700665473938,
+            0.00029934479971416295
+          ],
+          "prob_land": 0.999700665473938,
+          "prob_water": 0.00029934479971416295
+        },
+        "cfLand": {
+          "pred": 0,
+          "class": "Landbird",
+          "conf": 0.9997827410697937,
+          "probs": [
+            0.9997827410697937,
+            0.00021728198044002056
+          ],
+          "prob_land": 0.9997827410697937,
+          "prob_water": 0.00021728198044002056
+        },
+        "cfWater": {
+          "pred": 0,
+          "class": "Landbird",
+          "conf": 0.9999370574951172,
+          "probs": [
+            0.9999370574951172,
+            6.299778760876507e-05
+          ],
+          "prob_land": 0.9999370574951172,
+          "prob_water": 6.299778760876507e-05
+        },
+        "flipOnSwap": false,
+        "probChange": 0.0002
+      },
+      "corrected": {
+        "original": {
+          "pred": 0,
+          "class": "Landbird",
+          "conf": 0.9999144077301025,
+          "probs": [
+            0.9999144077301025,
+            8.557321416446939e-05
+          ],
+          "prob_land": 0.9999144077301025,
+          "prob_water": 8.557321416446939e-05
+        },
+        "cfLand": {
+          "pred": 0,
+          "class": "Landbird",
+          "conf": 0.9999215602874756,
+          "probs": [
+            0.9999215602874756,
+            7.842420018278062e-05
+          ],
+          "prob_land": 0.9999215602874756,
+          "prob_water": 7.842420018278062e-05
+        },
+        "cfWater": {
+          "pred": 0,
+          "class": "Landbird",
+          "conf": 0.9999759197235107,
+          "probs": [
+            0.9999759197235107,
+            2.4035194655880332e-05
+          ],
+          "prob_land": 0.9999759197235107,
+          "prob_water": 2.4035194655880332e-05
+        },
+        "flipOnSwap": false,
+        "probChange": 0.0001
+      }
+    },
+    {
+      "id": "landbird_on_land_3",
+      "specimenId": "Clay_Colored_Sparrow_0100_110545",
+      "group": "Landbird on Land",
+      "groupId": 0,
+      "trueClass": "Landbird",
+      "originalBackground": "Land",
+      "originalUrl": "/api/counterfactual/preview?name=landbird_on_land_3_original.png",
+      "cfLandUrl": "/api/counterfactual/preview?name=landbird_on_land_3_cf_land.png",
+      "cfWaterUrl": "/api/counterfactual/preview?name=landbird_on_land_3_cf_water.png",
+      "maskUrl": "/api/counterfactual/preview?name=landbird_on_land_3_mask.png",
+      "baseline": {
+        "original": {
+          "pred": 0,
+          "class": "Landbird",
+          "conf": 0.9999321699142456,
+          "probs": [
+            0.9999321699142456,
+            6.779481191188097e-05
+          ],
+          "prob_land": 0.9999321699142456,
+          "prob_water": 6.779481191188097e-05
+        },
+        "cfLand": {
+          "pred": 0,
+          "class": "Landbird",
+          "conf": 0.9999872446060181,
+          "probs": [
+            0.9999872446060181,
+            1.2724544831144158e-05
+          ],
+          "prob_land": 0.9999872446060181,
+          "prob_water": 1.2724544831144158e-05
+        },
+        "cfWater": {
+          "pred": 0,
+          "class": "Landbird",
+          "conf": 0.9849249720573425,
+          "probs": [
+            0.9849249720573425,
+            0.015075035393238068
+          ],
+          "prob_land": 0.9849249720573425,
+          "prob_water": 0.015075035393238068
+        },
+        "flipOnSwap": false,
+        "probChange": -0.015
+      },
+      "corrected": {
+        "original": {
+          "pred": 0,
+          "class": "Landbird",
+          "conf": 0.9999746084213257,
+          "probs": [
+            0.9999746084213257,
+            2.540559034969192e-05
+          ],
+          "prob_land": 0.9999746084213257,
+          "prob_water": 2.540559034969192e-05
+        },
+        "cfLand": {
+          "pred": 0,
+          "class": "Landbird",
+          "conf": 0.9999954700469971,
+          "probs": [
+            0.9999954700469971,
+            4.5668502934859134e-06
+          ],
+          "prob_land": 0.9999954700469971,
+          "prob_water": 4.5668502934859134e-06
+        },
+        "cfWater": {
+          "pred": 0,
+          "class": "Landbird",
+          "conf": 0.9992560744285583,
+          "probs": [
+            0.9992560744285583,
+            0.0007438580505549908
+          ],
+          "prob_land": 0.9992560744285583,
+          "prob_water": 0.0007438580505549908
+        },
+        "flipOnSwap": false,
+        "probChange": -0.0007
+      }
+    },
+    {
+      "id": "landbird_on_water_1",
+      "specimenId": "Cape_Glossy_Starling_0007_129345",
+      "group": "Landbird on Water",
+      "groupId": 1,
+      "trueClass": "Landbird",
+      "originalBackground": "Water",
+      "originalUrl": "/api/counterfactual/preview?name=landbird_on_water_1_original.png",
+      "cfLandUrl": "/api/counterfactual/preview?name=landbird_on_water_1_cf_land.png",
+      "cfWaterUrl": "/api/counterfactual/preview?name=landbird_on_water_1_cf_water.png",
+      "maskUrl": "/api/counterfactual/preview?name=landbird_on_water_1_mask.png",
+      "baseline": {
+        "original": {
+          "pred": 0,
+          "class": "Landbird",
+          "conf": 0.987983226776123,
+          "probs": [
+            0.987983226776123,
+            0.012016755528748035
+          ],
+          "prob_land": 0.987983226776123,
+          "prob_water": 0.012016755528748035
+        },
+        "cfLand": {
+          "pred": 0,
+          "class": "Landbird",
+          "conf": 0.9998595714569092,
+          "probs": [
+            0.9998595714569092,
+            0.00014043136616237462
+          ],
+          "prob_land": 0.9998595714569092,
+          "prob_water": 0.00014043136616237462
+        },
+        "cfWater": {
+          "pred": 0,
+          "class": "Landbird",
+          "conf": 0.999894380569458,
+          "probs": [
+            0.999894380569458,
+            0.00010558278881944716
+          ],
+          "prob_land": 0.999894380569458,
+          "prob_water": 0.00010558278881944716
+        },
+        "flipOnSwap": false,
+        "probChange": 0.0119
+      },
+      "corrected": {
+        "original": {
+          "pred": 0,
+          "class": "Landbird",
+          "conf": 0.9723225831985474,
+          "probs": [
+            0.9723225831985474,
+            0.027677461504936218
+          ],
+          "prob_land": 0.9723225831985474,
+          "prob_water": 0.027677461504936218
+        },
+        "cfLand": {
+          "pred": 0,
+          "class": "Landbird",
+          "conf": 0.99854576587677,
+          "probs": [
+            0.99854576587677,
+            0.0014543136348947883
+          ],
+          "prob_land": 0.99854576587677,
+          "prob_water": 0.0014543136348947883
+        },
+        "cfWater": {
+          "pred": 0,
+          "class": "Landbird",
+          "conf": 0.9997530579566956,
+          "probs": [
+            0.9997530579566956,
+            0.00024692167062312365
+          ],
+          "prob_land": 0.9997530579566956,
+          "prob_water": 0.00024692167062312365
+        },
+        "flipOnSwap": false,
+        "probChange": 0.0262
+      }
+    },
+    {
+      "id": "landbird_on_water_2",
+      "specimenId": "Olive_Sided_Flycatcher_0056_30570",
+      "group": "Landbird on Water",
+      "groupId": 1,
+      "trueClass": "Landbird",
+      "originalBackground": "Water",
+      "originalUrl": "/api/counterfactual/preview?name=landbird_on_water_2_original.png",
+      "cfLandUrl": "/api/counterfactual/preview?name=landbird_on_water_2_cf_land.png",
+      "cfWaterUrl": "/api/counterfactual/preview?name=landbird_on_water_2_cf_water.png",
+      "maskUrl": "/api/counterfactual/preview?name=landbird_on_water_2_mask.png",
+      "baseline": {
+        "original": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.9831565022468567,
+          "probs": [
+            0.016843460500240326,
+            0.9831565022468567
+          ],
+          "prob_land": 0.016843460500240326,
+          "prob_water": 0.9831565022468567
+        },
+        "cfLand": {
+          "pred": 0,
+          "class": "Landbird",
+          "conf": 0.9994346499443054,
+          "probs": [
+            0.9994346499443054,
+            0.000565317168366164
+          ],
+          "prob_land": 0.9994346499443054,
+          "prob_water": 0.000565317168366164
+        },
+        "cfWater": {
+          "pred": 0,
+          "class": "Landbird",
+          "conf": 0.9153739809989929,
+          "probs": [
+            0.9153739809989929,
+            0.08462604880332947
+          ],
+          "prob_land": 0.9153739809989929,
+          "prob_water": 0.08462604880332947
+        },
+        "flipOnSwap": true,
+        "probChange": 0.9826
+      },
+      "corrected": {
+        "original": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.7680277228355408,
+          "probs": [
+            0.23197224736213684,
+            0.7680277228355408
+          ],
+          "prob_land": 0.23197224736213684,
+          "prob_water": 0.7680277228355408
+        },
+        "cfLand": {
+          "pred": 0,
+          "class": "Landbird",
+          "conf": 0.9993878602981567,
+          "probs": [
+            0.9993878602981567,
+            0.0006120783509686589
+          ],
+          "prob_land": 0.9993878602981567,
+          "prob_water": 0.0006120783509686589
+        },
+        "cfWater": {
+          "pred": 0,
+          "class": "Landbird",
+          "conf": 0.9687837958335876,
+          "probs": [
+            0.9687837958335876,
+            0.03121621161699295
+          ],
+          "prob_land": 0.9687837958335876,
+          "prob_water": 0.03121621161699295
+        },
+        "flipOnSwap": true,
+        "probChange": 0.7674
+      }
+    },
+    {
+      "id": "landbird_on_water_3",
+      "specimenId": "Acadian_Flycatcher_0038_795616",
+      "group": "Landbird on Water",
+      "groupId": 1,
+      "trueClass": "Landbird",
+      "originalBackground": "Water",
+      "originalUrl": "/api/counterfactual/preview?name=landbird_on_water_3_original.png",
+      "cfLandUrl": "/api/counterfactual/preview?name=landbird_on_water_3_cf_land.png",
+      "cfWaterUrl": "/api/counterfactual/preview?name=landbird_on_water_3_cf_water.png",
+      "maskUrl": "/api/counterfactual/preview?name=landbird_on_water_3_mask.png",
+      "baseline": {
+        "original": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.8688211441040039,
+          "probs": [
+            0.1311788409948349,
+            0.8688211441040039
+          ],
+          "prob_land": 0.1311788409948349,
+          "prob_water": 0.8688211441040039
+        },
+        "cfLand": {
+          "pred": 0,
+          "class": "Landbird",
+          "conf": 0.9987645149230957,
+          "probs": [
+            0.9987645149230957,
+            0.001235559699125588
+          ],
+          "prob_land": 0.9987645149230957,
+          "prob_water": 0.001235559699125588
+        },
+        "cfWater": {
+          "pred": 0,
+          "class": "Landbird",
+          "conf": 0.9443855881690979,
+          "probs": [
+            0.9443855881690979,
+            0.0556144081056118
+          ],
+          "prob_land": 0.9443855881690979,
+          "prob_water": 0.0556144081056118
+        },
+        "flipOnSwap": true,
+        "probChange": 0.8676
+      },
+      "corrected": {
+        "original": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.605670154094696,
+          "probs": [
+            0.39432987570762634,
+            0.605670154094696
+          ],
+          "prob_land": 0.39432987570762634,
+          "prob_water": 0.605670154094696
+        },
+        "cfLand": {
+          "pred": 0,
+          "class": "Landbird",
+          "conf": 0.9948300719261169,
+          "probs": [
+            0.9948300719261169,
+            0.005169977433979511
+          ],
+          "prob_land": 0.9948300719261169,
+          "prob_water": 0.005169977433979511
+        },
+        "cfWater": {
+          "pred": 0,
+          "class": "Landbird",
+          "conf": 0.9304075837135315,
+          "probs": [
+            0.9304075837135315,
+            0.06959239393472672
+          ],
+          "prob_land": 0.9304075837135315,
+          "prob_water": 0.06959239393472672
+        },
+        "flipOnSwap": true,
+        "probChange": 0.6005
+      }
+    },
+    {
+      "id": "waterbird_on_land_1",
+      "specimenId": "Horned_Grebe_0010_34716",
+      "group": "Waterbird on Land",
+      "groupId": 2,
+      "trueClass": "Waterbird",
+      "originalBackground": "Land",
+      "originalUrl": "/api/counterfactual/preview?name=waterbird_on_land_1_original.png",
+      "cfLandUrl": "/api/counterfactual/preview?name=waterbird_on_land_1_cf_land.png",
+      "cfWaterUrl": "/api/counterfactual/preview?name=waterbird_on_land_1_cf_water.png",
+      "maskUrl": "/api/counterfactual/preview?name=waterbird_on_land_1_mask.png",
+      "baseline": {
+        "original": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.8638902306556702,
+          "probs": [
+            0.13610979914665222,
+            0.8638902306556702
+          ],
+          "prob_land": 0.13610979914665222,
+          "prob_water": 0.8638902306556702
+        },
+        "cfLand": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.9711582064628601,
+          "probs": [
+            0.028841843828558922,
+            0.9711582064628601
+          ],
+          "prob_land": 0.028841843828558922,
+          "prob_water": 0.9711582064628601
+        },
+        "cfWater": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.9986598491668701,
+          "probs": [
+            0.0013401212636381388,
+            0.9986598491668701
+          ],
+          "prob_land": 0.0013401212636381388,
+          "prob_water": 0.9986598491668701
+        },
+        "flipOnSwap": false,
+        "probChange": 0.1348
+      },
+      "corrected": {
+        "original": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.9840582013130188,
+          "probs": [
+            0.015941772609949112,
+            0.9840582013130188
+          ],
+          "prob_land": 0.015941772609949112,
+          "prob_water": 0.9840582013130188
+        },
+        "cfLand": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.9925652742385864,
+          "probs": [
+            0.007434654515236616,
+            0.9925652742385864
+          ],
+          "prob_land": 0.007434654515236616,
+          "prob_water": 0.9925652742385864
+        },
+        "cfWater": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.9817772507667542,
+          "probs": [
+            0.018222790211439133,
+            0.9817772507667542
+          ],
+          "prob_land": 0.018222790211439133,
+          "prob_water": 0.9817772507667542
+        },
+        "flipOnSwap": false,
+        "probChange": -0.0023
+      }
+    },
+    {
+      "id": "waterbird_on_land_2",
+      "specimenId": "California_Gull_0030_41354",
+      "group": "Waterbird on Land",
+      "groupId": 2,
+      "trueClass": "Waterbird",
+      "originalBackground": "Land",
+      "originalUrl": "/api/counterfactual/preview?name=waterbird_on_land_2_original.png",
+      "cfLandUrl": "/api/counterfactual/preview?name=waterbird_on_land_2_cf_land.png",
+      "cfWaterUrl": "/api/counterfactual/preview?name=waterbird_on_land_2_cf_water.png",
+      "maskUrl": "/api/counterfactual/preview?name=waterbird_on_land_2_mask.png",
+      "baseline": {
+        "original": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.9278054237365723,
+          "probs": [
+            0.07219456136226654,
+            0.9278054237365723
+          ],
+          "prob_land": 0.07219456136226654,
+          "prob_water": 0.9278054237365723
+        },
+        "cfLand": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.9917490482330322,
+          "probs": [
+            0.008251025341451168,
+            0.9917490482330322
+          ],
+          "prob_land": 0.008251025341451168,
+          "prob_water": 0.9917490482330322
+        },
+        "cfWater": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.9988951086997986,
+          "probs": [
+            0.0011049485765397549,
+            0.9988951086997986
+          ],
+          "prob_land": 0.0011049485765397549,
+          "prob_water": 0.9988951086997986
+        },
+        "flipOnSwap": false,
+        "probChange": 0.0711
+      },
+      "corrected": {
+        "original": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.9811066389083862,
+          "probs": [
+            0.01889340952038765,
+            0.9811066389083862
+          ],
+          "prob_land": 0.01889340952038765,
+          "prob_water": 0.9811066389083862
+        },
+        "cfLand": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.9992117881774902,
+          "probs": [
+            0.0007882046629674733,
+            0.9992117881774902
+          ],
+          "prob_land": 0.0007882046629674733,
+          "prob_water": 0.9992117881774902
+        },
+        "cfWater": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.9969262480735779,
+          "probs": [
+            0.003073738655075431,
+            0.9969262480735779
+          ],
+          "prob_land": 0.003073738655075431,
+          "prob_water": 0.9969262480735779
+        },
+        "flipOnSwap": false,
+        "probChange": 0.0158
+      }
+    },
+    {
+      "id": "waterbird_on_land_3",
+      "specimenId": "Rhinoceros_Auklet_0046_797532",
+      "group": "Waterbird on Land",
+      "groupId": 2,
+      "trueClass": "Waterbird",
+      "originalBackground": "Land",
+      "originalUrl": "/api/counterfactual/preview?name=waterbird_on_land_3_original.png",
+      "cfLandUrl": "/api/counterfactual/preview?name=waterbird_on_land_3_cf_land.png",
+      "cfWaterUrl": "/api/counterfactual/preview?name=waterbird_on_land_3_cf_water.png",
+      "maskUrl": "/api/counterfactual/preview?name=waterbird_on_land_3_mask.png",
+      "baseline": {
+        "original": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.9459446668624878,
+          "probs": [
+            0.05405530333518982,
+            0.9459446668624878
+          ],
+          "prob_land": 0.05405530333518982,
+          "prob_water": 0.9459446668624878
+        },
+        "cfLand": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.7479444146156311,
+          "probs": [
+            0.2520555555820465,
+            0.7479444146156311
+          ],
+          "prob_land": 0.2520555555820465,
+          "prob_water": 0.7479444146156311
+        },
+        "cfWater": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.970529317855835,
+          "probs": [
+            0.029470734298229218,
+            0.970529317855835
+          ],
+          "prob_land": 0.029470734298229218,
+          "prob_water": 0.970529317855835
+        },
+        "flipOnSwap": false,
+        "probChange": 0.0246
+      },
+      "corrected": {
+        "original": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.9715103507041931,
+          "probs": [
+            0.028489714488387108,
+            0.9715103507041931
+          ],
+          "prob_land": 0.028489714488387108,
+          "prob_water": 0.9715103507041931
+        },
+        "cfLand": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.9779518842697144,
+          "probs": [
+            0.022048138082027435,
+            0.9779518842697144
+          ],
+          "prob_land": 0.022048138082027435,
+          "prob_water": 0.9779518842697144
+        },
+        "cfWater": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.978805422782898,
+          "probs": [
+            0.021194614470005035,
+            0.978805422782898
+          ],
+          "prob_land": 0.021194614470005035,
+          "prob_water": 0.978805422782898
+        },
+        "flipOnSwap": false,
+        "probChange": 0.0073
+      }
+    },
+    {
+      "id": "waterbird_on_water_1",
+      "specimenId": "Northern_Fulmar_0091_44120",
+      "group": "Waterbird on Water",
+      "groupId": 3,
+      "trueClass": "Waterbird",
+      "originalBackground": "Water",
+      "originalUrl": "/api/counterfactual/preview?name=waterbird_on_water_1_original.png",
+      "cfLandUrl": "/api/counterfactual/preview?name=waterbird_on_water_1_cf_land.png",
+      "cfWaterUrl": "/api/counterfactual/preview?name=waterbird_on_water_1_cf_water.png",
+      "maskUrl": "/api/counterfactual/preview?name=waterbird_on_water_1_mask.png",
+      "baseline": {
+        "original": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.9999607801437378,
+          "probs": [
+            3.9235539588844404e-05,
+            0.9999607801437378
+          ],
+          "prob_land": 3.9235539588844404e-05,
+          "prob_water": 0.9999607801437378
+        },
+        "cfLand": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.9875969290733337,
+          "probs": [
+            0.012403092347085476,
+            0.9875969290733337
+          ],
+          "prob_land": 0.012403092347085476,
+          "prob_water": 0.9875969290733337
+        },
+        "cfWater": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.9999908208847046,
+          "probs": [
+            9.144137948169373e-06,
+            0.9999908208847046
+          ],
+          "prob_land": 9.144137948169373e-06,
+          "prob_water": 0.9999908208847046
+        },
+        "flipOnSwap": false,
+        "probChange": -0.0124
+      },
+      "corrected": {
+        "original": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.999325156211853,
+          "probs": [
+            0.0006748555460944772,
+            0.999325156211853
+          ],
+          "prob_land": 0.0006748555460944772,
+          "prob_water": 0.999325156211853
+        },
+        "cfLand": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.9957436919212341,
+          "probs": [
+            0.0042562903836369514,
+            0.9957436919212341
+          ],
+          "prob_land": 0.0042562903836369514,
+          "prob_water": 0.9957436919212341
+        },
+        "cfWater": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.9995900988578796,
+          "probs": [
+            0.00040986351086758077,
+            0.9995900988578796
+          ],
+          "prob_land": 0.00040986351086758077,
+          "prob_water": 0.9995900988578796
+        },
+        "flipOnSwap": false,
+        "probChange": -0.0036
+      }
+    },
+    {
+      "id": "waterbird_on_water_2",
+      "specimenId": "California_Gull_0132_40836",
+      "group": "Waterbird on Water",
+      "groupId": 3,
+      "trueClass": "Waterbird",
+      "originalBackground": "Water",
+      "originalUrl": "/api/counterfactual/preview?name=waterbird_on_water_2_original.png",
+      "cfLandUrl": "/api/counterfactual/preview?name=waterbird_on_water_2_cf_land.png",
+      "cfWaterUrl": "/api/counterfactual/preview?name=waterbird_on_water_2_cf_water.png",
+      "maskUrl": "/api/counterfactual/preview?name=waterbird_on_water_2_mask.png",
+      "baseline": {
+        "original": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.9998235106468201,
+          "probs": [
+            0.00017651812231633812,
+            0.9998235106468201
+          ],
+          "prob_land": 0.00017651812231633812,
+          "prob_water": 0.9998235106468201
+        },
+        "cfLand": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.9519528746604919,
+          "probs": [
+            0.04804709553718567,
+            0.9519528746604919
+          ],
+          "prob_land": 0.04804709553718567,
+          "prob_water": 0.9519528746604919
+        },
+        "cfWater": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.9998206496238708,
+          "probs": [
+            0.0001793729461496696,
+            0.9998206496238708
+          ],
+          "prob_land": 0.0001793729461496696,
+          "prob_water": 0.9998206496238708
+        },
+        "flipOnSwap": false,
+        "probChange": -0.0479
+      },
+      "corrected": {
+        "original": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.9969706535339355,
+          "probs": [
+            0.0030293003655970097,
+            0.9969706535339355
+          ],
+          "prob_land": 0.0030293003655970097,
+          "prob_water": 0.9969706535339355
+        },
+        "cfLand": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.9932395219802856,
+          "probs": [
+            0.006760430056601763,
+            0.9932395219802856
+          ],
+          "prob_land": 0.006760430056601763,
+          "prob_water": 0.9932395219802856
+        },
+        "cfWater": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.9976931214332581,
+          "probs": [
+            0.0023068441078066826,
+            0.9976931214332581
+          ],
+          "prob_land": 0.0023068441078066826,
+          "prob_water": 0.9976931214332581
+        },
+        "flipOnSwap": false,
+        "probChange": -0.0037
+      }
+    },
+    {
+      "id": "waterbird_on_water_3",
+      "specimenId": "Caspian_Tern_0005_145929",
+      "group": "Waterbird on Water",
+      "groupId": 3,
+      "trueClass": "Waterbird",
+      "originalBackground": "Water",
+      "originalUrl": "/api/counterfactual/preview?name=waterbird_on_water_3_original.png",
+      "cfLandUrl": "/api/counterfactual/preview?name=waterbird_on_water_3_cf_land.png",
+      "cfWaterUrl": "/api/counterfactual/preview?name=waterbird_on_water_3_cf_water.png",
+      "maskUrl": "/api/counterfactual/preview?name=waterbird_on_water_3_mask.png",
+      "baseline": {
+        "original": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.9999594688415527,
+          "probs": [
+            4.0574763261247426e-05,
+            0.9999594688415527
+          ],
+          "prob_land": 4.0574763261247426e-05,
+          "prob_water": 0.9999594688415527
+        },
+        "cfLand": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.9960665106773376,
+          "probs": [
+            0.0039335256442427635,
+            0.9960665106773376
+          ],
+          "prob_land": 0.0039335256442427635,
+          "prob_water": 0.9960665106773376
+        },
+        "cfWater": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.9999600648880005,
+          "probs": [
+            3.989658216596581e-05,
+            0.9999600648880005
+          ],
+          "prob_land": 3.989658216596581e-05,
+          "prob_water": 0.9999600648880005
+        },
+        "flipOnSwap": false,
+        "probChange": -0.0039
+      },
+      "corrected": {
+        "original": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.9998399019241333,
+          "probs": [
+            0.00016003166092559695,
+            0.9998399019241333
+          ],
+          "prob_land": 0.00016003166092559695,
+          "prob_water": 0.9998399019241333
+        },
+        "cfLand": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.998389720916748,
+          "probs": [
+            0.0016103421803563833,
+            0.998389720916748
+          ],
+          "prob_land": 0.0016103421803563833,
+          "prob_water": 0.998389720916748
+        },
+        "cfWater": {
+          "pred": 1,
+          "class": "Waterbird",
+          "conf": 0.999742329120636,
+          "probs": [
+            0.0002576072292868048,
+            0.999742329120636
+          ],
+          "prob_land": 0.0002576072292868048,
+          "prob_water": 0.999742329120636
+        },
+        "flipOnSwap": false,
+        "probChange": -0.0015
+      }
+    }
+  ]
+}

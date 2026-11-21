@@ -10,23 +10,129 @@ from torchvision.models import ResNet50_Weights
 
 # Allow imports when run from the project root.
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(PROJECT_ROOT))
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 from models.resnet import get_baseline_model
 
 
-class GradCAM:
-    """Generate Grad-CAM heatmaps for a ResNet-50 model."""
+class FusionGradCAM:
+    """Generate dual-branch Grad-CAM heatmaps for the ResNet50 + EfficientNet-B0 Fusion model."""
 
     def __init__(self, model):
         self.model = model
-        self.activations = None
-        self.gradients = None
+        self.r_acts = None
+        self.r_grads = None
+        self.e_acts = None
+        self.e_grads = None
+        self.hook_handles = []
 
-        # Last convolutional block of ResNet-50.
-        target_layer = self.model.model.layer4[-1]
-        target_layer.register_forward_hook(self._save_activations)
-        target_layer.register_full_backward_hook(self._save_gradients)
+        r_target = model.resnet_target_layer
+        e_target = model.effnet_target_layer
+
+        h1 = r_target.register_forward_hook(self._save_r_act)
+        h2 = r_target.register_full_backward_hook(self._save_r_grad)
+        h3 = e_target.register_forward_hook(self._save_e_act)
+        h4 = e_target.register_full_backward_hook(self._save_e_grad)
+        self.hook_handles = [h1, h2, h3, h4]
+
+    def _save_r_act(self, module, inp, out):
+        self.r_acts = out.detach()
+
+    def _save_r_grad(self, module, gi, go):
+        self.r_grads = go[0].detach()
+
+    def _save_e_act(self, module, inp, out):
+        self.e_acts = out.detach()
+
+    def _save_e_grad(self, module, gi, go):
+        self.e_grads = go[0].detach()
+
+    def remove_hooks(self):
+        for h in self.hook_handles:
+            try:
+                h.remove()
+            except Exception:
+                pass
+        self.hook_handles = []
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.remove_hooks()
+
+    def generate(self, image_tensor, class_index=None):
+        try:
+            self.model.eval()
+            self.model.zero_grad(set_to_none=True)
+            with torch.enable_grad():
+                logits = self.model(image_tensor)
+
+                if class_index is None:
+                    class_index = int(logits.argmax(dim=1).item())
+
+                score = logits[:, class_index].sum()
+                score.backward(retain_graph=False)
+
+            # ResNet branch CAM
+            w_r = self.r_grads.mean(dim=(2, 3), keepdim=True)
+            cam_r = F.relu((w_r * self.r_acts).sum(dim=1, keepdim=True))
+            cam_r = F.interpolate(
+                cam_r,
+                size=image_tensor.shape[-2:],
+                mode="bilinear",
+                align_corners=False,
+            )
+            cam_r_min = cam_r.amin(dim=(2, 3), keepdim=True)
+            cam_r_max = cam_r.amax(dim=(2, 3), keepdim=True)
+            cam_r = (cam_r - cam_r_min) / (cam_r_max - cam_r_min).clamp_min(1e-8)
+
+            # EfficientNet branch CAM
+            w_e = self.e_grads.mean(dim=(2, 3), keepdim=True)
+            cam_e = F.relu((w_e * self.e_acts).sum(dim=1, keepdim=True))
+            cam_e = F.interpolate(
+                cam_e,
+                size=image_tensor.shape[-2:],
+                mode="bilinear",
+                align_corners=False,
+            )
+            cam_e_min = cam_e.amin(dim=(2, 3), keepdim=True)
+            cam_e_max = cam_e.amax(dim=(2, 3), keepdim=True)
+            cam_e = (cam_e - cam_e_min) / (cam_e_max - cam_e_min).clamp_min(1e-8)
+
+            # Fused multi-backbone attribution
+            fused_cam = 0.5 * cam_r + 0.5 * cam_e
+            fused_min = fused_cam.amin(dim=(2, 3), keepdim=True)
+            fused_max = fused_cam.amax(dim=(2, 3), keepdim=True)
+            fused_cam = (fused_cam - fused_min) / (fused_max - fused_min).clamp_min(1e-8)
+
+            probabilities = torch.softmax(logits.detach(), dim=1)
+            return fused_cam[0, 0].cpu(), probabilities[0].detach().cpu()
+        finally:
+            self.remove_hooks()
+
+
+class GradCAM:
+    """Polymorphic Grad-CAM generator supporting ResNet-50 and ResNet50 + EfficientNet-B0 Fusion models."""
+
+    def __init__(self, model):
+        self.model = model
+        from models.fusion import ResNet50EfficientNetFusion
+
+        if isinstance(model, ResNet50EfficientNetFusion):
+            self._delegate = FusionGradCAM(model)
+        else:
+            self._delegate = None
+            self.activations = None
+            self.gradients = None
+            self.hook_handles = []
+
+            # Last convolutional block of ResNet-50.
+            target_layer = self.model.model.layer4[-1]
+            h1 = target_layer.register_forward_hook(self._save_activations)
+            h2 = target_layer.register_full_backward_hook(self._save_gradients)
+            self.hook_handles = [h1, h2]
 
     def _save_activations(self, module, inputs, output):
         self.activations = output.detach()
@@ -34,43 +140,69 @@ class GradCAM:
     def _save_gradients(self, module, grad_input, grad_output):
         self.gradients = grad_output[0].detach()
 
+    def remove_hooks(self):
+        if self._delegate:
+            self._delegate.remove_hooks()
+        else:
+            for h in self.hook_handles:
+                try:
+                    h.remove()
+                except Exception:
+                    pass
+            self.hook_handles = []
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.remove_hooks()
+
     def generate(self, image_tensor, class_index=None):
-        self.model.zero_grad(set_to_none=True)
-        logits = self.model(image_tensor)
+        if self._delegate:
+            return self._delegate.generate(image_tensor, class_index)
 
-        if class_index is None:
-            class_index = int(logits.argmax(dim=1).item())
+        try:
+            self.model.eval()
+            self.model.zero_grad(set_to_none=True)
+            with torch.enable_grad():
+                logits = self.model(image_tensor)
 
-        logits[:, class_index].sum().backward()
+                if class_index is None:
+                    class_index = int(logits.argmax(dim=1).item())
 
-        weights = self.gradients.mean(dim=(2, 3), keepdim=True)
-        cam = (weights * self.activations).sum(dim=1, keepdim=True)
-        cam = F.relu(cam)
+                score = logits[:, class_index].sum()
+                score.backward(retain_graph=False)
 
-        cam = F.interpolate(
-            cam,
-            size=image_tensor.shape[-2:],
-            mode="bilinear",
-            align_corners=False,
-        )
+            weights = self.gradients.mean(dim=(2, 3), keepdim=True)
+            cam = (weights * self.activations).sum(dim=1, keepdim=True)
+            cam = F.relu(cam)
 
-        cam_min = cam.amin(dim=(2, 3), keepdim=True)
-        cam_max = cam.amax(dim=(2, 3), keepdim=True)
-        cam = (cam - cam_min) / (cam_max - cam_min).clamp_min(1e-8)
+            cam = F.interpolate(
+                cam,
+                size=image_tensor.shape[-2:],
+                mode="bilinear",
+                align_corners=False,
+            )
 
-        probabilities = torch.softmax(logits, dim=1)
-        return cam[0, 0].cpu(), probabilities[0].detach().cpu()
+            cam_min = cam.amin(dim=(2, 3), keepdim=True)
+            cam_max = cam.amax(dim=(2, 3), keepdim=True)
+            cam = (cam - cam_min) / (cam_max - cam_min).clamp_min(1e-8)
+
+            probabilities = torch.softmax(logits.detach(), dim=1)
+            return cam[0, 0].cpu(), probabilities[0].detach().cpu()
+        finally:
+            self.remove_hooks()
 
 
 def main():
     checkpoint_path = PROJECT_ROOT / "models" / "baseline_resnet50.pth"
     image_path = (
-    PROJECT_ROOT
-    / "data"
-    / "waterbird_complete95_forest2water2"
-    / "001.Black_footed_Albatross"
-    / "Black_Footed_Albatross_0001_796111.jpg"
-)
+        PROJECT_ROOT
+        / "data"
+        / "waterbird_complete95_forest2water2"
+        / "001.Black_footed_Albatross"
+        / "Black_Footed_Albatross_0001_796111.jpg"
+    )
     output_path = PROJECT_ROOT / "results" / "gradcam.png"
 
     if not checkpoint_path.exists():
@@ -134,9 +266,6 @@ def main():
     print("Grad-CAM heatmap saved to:", output_path)
     print("Grad-CAM overlay saved to:", overlay_path)
     print("Class probabilities:", probabilities.tolist())
-
-
-
 
 
 if __name__ == "__main__":
