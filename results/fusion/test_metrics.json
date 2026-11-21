@@ -1,0 +1,98 @@
+{
+  "model_name": "ResNet50 + EfficientNet-B0 Feature Fusion",
+  "architecture": {
+    "backbone_1": "ResNet-50 (2,048 features)",
+    "backbone_2": "EfficientNet-B0 (1,280 features)",
+    "fusion_type": "Feature Concatenation (3,328 features)",
+    "head": "2-Layer MLP (3328 -> 512 -> 2) with BatchNorm and Dropout"
+  },
+  "model_parameters": {
+    "total_parameters": 29222078,
+    "trainable_parameters": 29222078,
+    "resnet50_parameters": 23508032,
+    "efficientnet_b0_parameters": 4007548,
+    "classifier_head_parameters": 1706498
+  },
+  "checkpoint": {
+    "path": "D:\\DeepSpur\\DeepSpur\\models\\fusion_resnet50_effnetb0.pth",
+    "size_bytes": 117521352,
+    "size_mb": 112.08,
+    "best_val_wga": 77.44,
+    "best_val_acc": 88.24,
+    "training_epoch": 1
+  },
+  "inference_benchmarks": {
+    "single_image_latency_ms": 184.78,
+    "single_image_latency_std_ms": 27.62,
+    "batch_32_latency_ms": 5424.01,
+    "throughput_images_per_sec": 5.9
+  },
+  "test_split_metrics": {
+    "total_samples": 5794,
+    "overall_accuracy": 88.54,
+    "worst_group_accuracy": 77.88,
+    "worst_group_id": 2,
+    "worst_group_name": "Waterbird on Land (y=1, c=0) [Worst Minority]",
+    "disparity_gap": 20.26,
+    "subgroups": {
+      "0": {
+        "group_id": 0,
+        "group_name": "Landbird on Land (y=0, c=0)",
+        "group_short_name": "Land / Land",
+        "n_samples": 2255,
+        "n_correct": 2213,
+        "accuracy": 98.14
+      },
+      "1": {
+        "group_id": 1,
+        "group_name": "Landbird on Water (y=0, c=1) [Minority]",
+        "group_short_name": "Land / Water",
+        "n_samples": 2255,
+        "n_correct": 1816,
+        "accuracy": 80.53
+      },
+      "2": {
+        "group_id": 2,
+        "group_name": "Waterbird on Land (y=1, c=0) [Worst Minority]",
+        "group_short_name": "Water / Land",
+        "n_samples": 642,
+        "n_correct": 500,
+        "accuracy": 77.88
+      },
+      "3": {
+        "group_id": 3,
+        "group_name": "Waterbird on Water (y=1, c=1)",
+        "group_short_name": "Water / Water",
+        "n_samples": 642,
+        "n_correct": 601,
+        "accuracy": 93.61
+      }
+    },
+    "classification_metrics": {
+      "macro_precision": 82.63,
+      "macro_recall": 87.54,
+      "macro_f1": 84.61,
+      "class_0_landbird": {
+        "precision": 95.66,
+        "recall": 89.33,
+        "f1_score": 92.39,
+        "support": 4510
+      },
+      "class_1_waterbird": {
+        "precision": 69.6,
+        "recall": 85.75,
+        "f1_score": 76.83,
+        "support": 1284
+      },
+      "confusion_matrix": {
+        "true_landbird_pred_landbird (TN)": 4029,
+        "true_landbird_pred_waterbird (FP)": 481,
+        "true_waterbird_pred_waterbird (TP)": 1101,
+        "true_waterbird_pred_landbird (FN)": 183
+      },
+      "weighted_f1": 88.94
+    }
+  },
+  "eval_time_seconds": 1087.62,
+  "timestamp": "2026-11-20 21:11:45"
+}

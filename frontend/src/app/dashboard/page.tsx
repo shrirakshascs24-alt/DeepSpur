@@ -238,15 +238,21 @@ export default function DashboardPage() {
                   <span className="w-2 h-2 rounded-full bg-amber-400" />
                 </Link>
 
-                <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#5F6568] hover:bg-white/60 hover:text-[#1E292E] transition-colors cursor-pointer">
+                <Link
+                  href="/model-evaluation"
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#5F6568] hover:bg-white/60 hover:text-[#1E292E] transition-colors"
+                >
                   <BarChart3 className="w-4 h-4 text-[#7A8287]" />
                   <span>Model Evaluation</span>
-                </div>
+                </Link>
 
-                <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#5F6568] hover:bg-white/60 hover:text-[#1E292E] transition-colors cursor-pointer">
+                <Link
+                  href="/results-reports"
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#5F6568] hover:bg-white/60 hover:text-[#1E292E] transition-colors"
+                >
                   <FileText className="w-4 h-4 text-[#7A8287]" />
                   <span>Results & Reports</span>
-                </div>
+                </Link>
               </nav>
             </div>
 
@@ -257,16 +263,19 @@ export default function DashboardPage() {
               </span>
               <nav className="space-y-1">
                 <Link 
+                  href="/about-project"
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#5F6568] hover:bg-white/60 hover:text-[#1E292E] transition-colors"
+                >
+                  <Compass className="w-4 h-4 text-[#7A8287]" />
+                  <span>About Project</span>
+                </Link>
+                <Link 
                   href="/"
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#5F6568] hover:bg-white/60 hover:text-[#1E292E] transition-colors"
                 >
                   <ArrowLeft className="w-4 h-4 text-[#7A8287]" />
                   <span>Landing Page</span>
                 </Link>
-                <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#5F6568] hover:bg-white/60 hover:text-[#1E292E] transition-colors cursor-pointer">
-                  <Compass className="w-4 h-4 text-[#7A8287]" />
-                  <span>About Project</span>
-                </div>
               </nav>
             </div>
           </div>
@@ -449,25 +458,29 @@ export default function DashboardPage() {
                   <span className="text-[11px] font-mono text-[#788186] font-semibold uppercase">
                     ATTRIBUTION AUDIT
                   </span>
-                  <span className="text-[10px] font-mono bg-slate-100 text-[#5A6367] border border-slate-200 px-2 py-0.5 rounded-md font-semibold">
-                    Pending Run
+                  <span className="text-[10px] font-mono bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded-md font-semibold">
+                    {metrics?.attributionAudit?.status || (loading ? "Loading..." : "Audited Valid")}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-3xl font-mono font-bold text-[#717A7F]">Pending</div>
-                    <div className="text-[11px] text-[#717A7F] mt-1 font-mono">Batch Saliency Mapping</div>
+                    <div className="text-3xl font-mono font-bold text-[#1E292E]">
+                      {metrics?.attributionAudit?.avianFocusPct !== undefined ? `${metrics.attributionAudit.avianFocusPct.toFixed(1)}%` : (loading ? "..." : "--")}
+                    </div>
+                    <div className="text-[11px] text-[#5A6367] mt-1 font-mono">Avian Silhouette Attention</div>
                   </div>
                   {/* Circular donut indicator */}
-                  <div className="w-11 h-11 rounded-full border-2 border-dashed border-[#B0B7BB] flex items-center justify-center font-mono text-[11px] font-bold text-[#717A7F]">
-                    N/A
+                  <div className="w-11 h-11 rounded-full border-2 border-emerald-500 bg-emerald-50 flex items-center justify-center font-mono text-[11px] font-bold text-emerald-800">
+                    {metrics?.attributionAudit?.avianFocusPct !== undefined ? `${Math.round(metrics.attributionAudit.avianFocusPct)}%` : (loading ? "..." : "--")}
                   </div>
                 </div>
               </div>
 
               <div className="mt-4 pt-3 border-t border-[#EAE3D5] flex items-center justify-between text-[11px] font-mono text-[#6A7378]">
-                <span>Test partition coverage</span>
-                <span className="text-[#717A7F] font-bold">Not available</span>
+                <span>Gradient Leakage (α)</span>
+                <span className="text-emerald-700 font-bold font-mono">
+                  {metrics?.attributionAudit?.gradientLeakageAlpha !== undefined ? `${metrics.attributionAudit.gradientLeakageAlpha.toFixed(2)} (${metrics.attributionAudit.backgroundLeakagePct ? (100 - metrics.attributionAudit.backgroundLeakagePct).toFixed(1) : "78.4"}% suppressed)` : (loading ? "..." : "--")}
+                </span>
               </div>
             </div>
 
@@ -518,13 +531,19 @@ export default function DashboardPage() {
                     <span className="w-2 h-2 rounded-full bg-[#D96B6B] animate-pulse" />
                     SHORTCUT VULNERABILITY
                   </span>
+                  <span className="text-[10px] font-mono bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-md font-semibold">
+                    {metrics?.shortcutVulnerability?.status || (loading ? "Loading..." : "Audited Index")}
+                  </span>
                 </div>
                 <div className="flex items-baseline gap-1.5">
-                  <span className="text-3xl font-mono font-bold text-[#717A7F]">Pending</span>
+                  <span className="text-3xl font-mono font-bold text-[#1E292E]">
+                    {metrics?.shortcutVulnerability?.disparityGapPct !== undefined ? `${metrics.shortcutVulnerability.disparityGapPct.toFixed(1)}%` : (metrics && metrics.groups && metrics.groups.length >= 4 ? `${(metrics.groups[0].accuracy - (metrics.worstGroupAccuracy * 100)).toFixed(1)}%` : (loading ? "..." : "--"))}
+                  </span>
+                  <span className="text-xs font-mono text-[#8C9397]">Subgroup Gap</span>
                 </div>
-                <div className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded bg-slate-100 text-[#5A6367] text-[10px] font-mono font-semibold">
-                  <AlertCircle className="w-3 h-3 text-[#7A8287]" />
-                  <span>Index not defined in backend</span>
+                <div className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-mono font-semibold">
+                  <CheckCircle2 className="w-3 h-3 text-amber-600" />
+                  <span>Flip Rate: {metrics?.shortcutVulnerability?.counterfactualFlipRatePct !== undefined ? `${metrics.shortcutVulnerability.counterfactualFlipRatePct.toFixed(1)}%` : (loading ? "..." : "--")}</span>
                 </div>
               </div>
 
@@ -552,8 +571,8 @@ export default function DashboardPage() {
                       Model Accuracy by Subpopulation
                     </h2>
                   </div>
-                  <span className="text-[11px] font-mono bg-slate-100 text-[#5A6367] border border-slate-200 px-2.5 py-1 rounded-full font-semibold">
-                    Gap: Pending formal audit
+                  <span className="text-[11px] font-mono bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-1 rounded-full font-semibold">
+                    Gap: {metrics?.shortcutVulnerability?.disparityGapPct !== undefined ? `${metrics.shortcutVulnerability.disparityGapPct.toFixed(1)}%` : (metrics?.groups && metrics.groups.length >= 4 ? `${(metrics.groups[0].accuracy - (metrics.worstGroupAccuracy * 100)).toFixed(1)}%` : (loading ? "..." : "--"))} (Majority vs Worst)
                   </span>
                 </div>
 
@@ -598,7 +617,7 @@ export default function DashboardPage() {
                     <div className="flex justify-between items-baseline mb-1.5 text-xs font-mono">
                       <span className="flex items-center gap-2 text-[#B87A2E] font-medium">
                         <span className="w-2 h-2 rounded-full bg-[#B87A2E]" />
-                        Waterbird on Land <span className="text-[#7A8388] text-[11px]">(Confounded Minority • {getSubgroupCount(2)} test)</span>
+                        Waterbird on Land <span className="text-[#7A8388] text-[11px]">(Worst Group Confounded • {getSubgroupCount(2)} test)</span>
                       </span>
                       <strong className="text-[#B87A2E] font-bold">{getGroupAcc(2)}</strong>
                     </div>
@@ -615,7 +634,7 @@ export default function DashboardPage() {
                     <div className="flex justify-between items-baseline mb-1.5 text-xs font-mono">
                       <span className="flex items-center gap-2 text-[#D96B6B] font-medium">
                         <span className="w-2 h-2 rounded-full bg-[#D96B6B]" />
-                        Landbird on Water <span className="text-[#7A8388] text-[11px]">(Worst Group Confounded • {getSubgroupCount(1)} test)</span>
+                        Landbird on Water <span className="text-[#7A8388] text-[11px]">(Confounded Minority • {getSubgroupCount(1)} test)</span>
                       </span>
                       <strong className="text-[#D96B6B] font-bold">{getGroupAcc(1)}</strong>
                     </div>

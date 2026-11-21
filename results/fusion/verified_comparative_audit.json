@@ -1,0 +1,174 @@
+{
+  "audit_scope": "Full Waterbirds Test Split (5,794 images)",
+  "source_dataset_file": "data/waterbirds/test.json",
+  "group_counts": {
+    "Group 0: Landbird on Land (y=0, c=0)": 2255,
+    "Group 1: Landbird on Water (y=0, c=1)": 2255,
+    "Group 2: Waterbird on Land (y=1, c=0)": 642,
+    "Group 3: Waterbird on Water (y=1, c=1)": 642,
+    "Total Test Images": 5794
+  },
+  "comparison_table": [
+    {
+      "metric": "Overall Test Accuracy (%)",
+      "sample_basis": "5,794 images",
+      "baseline_resnet50": 85.64,
+      "corrected_resnet50": 89.33,
+      "fusion_resnet50_effnetb0": 88.54,
+      "fusion_delta_vs_baseline": 2.9,
+      "fusion_delta_vs_corrected": -0.79
+    },
+    {
+      "metric": "Worst-Group Accuracy (WGA) (%)",
+      "sample_basis": "642 images (Group 2)",
+      "baseline_resnet50": 63.55,
+      "corrected_resnet50": 64.8,
+      "fusion_resnet50_effnetb0": 77.88,
+      "fusion_delta_vs_baseline": 14.33,
+      "fusion_delta_vs_corrected": 13.08
+    },
+    {
+      "metric": "Group 0: Landbird on Land (%)",
+      "sample_basis": "2,255 images (y=0, c=0)",
+      "baseline_resnet50": 99.42,
+      "corrected_resnet50": 99.38,
+      "fusion_resnet50_effnetb0": 98.14,
+      "fusion_delta_vs_baseline": -1.29,
+      "fusion_delta_vs_corrected": -1.24
+    },
+    {
+      "metric": "Group 1: Landbird on Water (%)",
+      "sample_basis": "2,255 images (y=0, c=1)",
+      "baseline_resnet50": 75.34,
+      "corrected_resnet50": 84.52,
+      "fusion_resnet50_effnetb0": 80.53,
+      "fusion_delta_vs_baseline": 5.19,
+      "fusion_delta_vs_corrected": -3.99
+    },
+    {
+      "metric": "Group 2: Waterbird on Land (%) [Worst Group]",
+      "sample_basis": "642 images (y=1, c=0)",
+      "baseline_resnet50": 63.55,
+      "corrected_resnet50": 64.8,
+      "fusion_resnet50_effnetb0": 77.88,
+      "fusion_delta_vs_baseline": 14.33,
+      "fusion_delta_vs_corrected": 13.08
+    },
+    {
+      "metric": "Group 3: Waterbird on Water (%)",
+      "sample_basis": "642 images (y=1, c=1)",
+      "baseline_resnet50": 95.48,
+      "corrected_resnet50": 95.48,
+      "fusion_resnet50_effnetb0": 93.61,
+      "fusion_delta_vs_baseline": -1.87,
+      "fusion_delta_vs_corrected": -1.87
+    },
+    {
+      "metric": "Subgroup Disparity Gap (% pts)",
+      "sample_basis": "Max Group Acc - Min Group Acc",
+      "baseline_resnet50": 35.87,
+      "corrected_resnet50": 34.58,
+      "fusion_resnet50_effnetb0": 20.26,
+      "fusion_delta_vs_baseline": -15.62,
+      "fusion_delta_vs_corrected": -14.33
+    },
+    {
+      "metric": "Binary Macro F1-Score (%) [Arithmetic Mean]",
+      "sample_basis": "(F1_Class0 + F1_Class1) / 2",
+      "baseline_resnet50": 80.75,
+      "corrected_resnet50": 84.99,
+      "fusion_resnet50_effnetb0": 84.61,
+      "fusion_delta_vs_baseline": 3.86,
+      "fusion_delta_vs_corrected": -0.38
+    },
+    {
+      "metric": "Weighted F1-Score (%)",
+      "sample_basis": "(N0*F1_0 + N1*F1_1) / Total",
+      "baseline_resnet50": 86.15,
+      "corrected_resnet50": 89.48,
+      "fusion_resnet50_effnetb0": 88.94,
+      "fusion_delta_vs_baseline": 2.79,
+      "fusion_delta_vs_corrected": -0.54
+    },
+    {
+      "metric": "Class 0 (Landbird) F1-Score (%)",
+      "sample_basis": "4,510 images",
+      "baseline_resnet50": 90.45,
+      "corrected_resnet50": 93.07,
+      "fusion_resnet50_effnetb0": 92.39,
+      "fusion_delta_vs_baseline": 1.93,
+      "fusion_delta_vs_corrected": -0.68
+    },
+    {
+      "metric": "Class 1 (Waterbird) F1-Score (%)",
+      "sample_basis": "1,284 images",
+      "baseline_resnet50": 71.05,
+      "corrected_resnet50": 76.91,
+      "fusion_resnet50_effnetb0": 76.83,
+      "fusion_delta_vs_baseline": 5.78,
+      "fusion_delta_vs_corrected": -0.07
+    }
+  ],
+  "models": {
+    "baseline_resnet50": {
+      "checkpoint": "models/baseline_resnet50.pth",
+      "overall_accuracy": 85.64,
+      "worst_group_accuracy": 63.55,
+      "subgroup_accuracies": {
+        "0": 99.42,
+        "1": 75.34,
+        "2": 63.55,
+        "3": 95.48
+      },
+      "disparity_gap": 35.87,
+      "macro_f1": 80.75,
+      "weighted_f1": 86.15,
+      "confusion_matrix": {
+        "TN": 3941,
+        "FP": 569,
+        "TP": 1021,
+        "FN": 263
+      }
+    },
+    "corrected_resnet50": {
+      "checkpoint": "models/corrected_resnet50.pth",
+      "overall_accuracy": 89.33,
+      "worst_group_accuracy": 64.8,
+      "subgroup_accuracies": {
+        "0": 99.38,
+        "1": 84.52,
+        "2": 64.8,
+        "3": 95.48
+      },
+      "disparity_gap": 34.58,
+      "macro_f1": 84.99,
+      "weighted_f1": 89.48,
+      "confusion_matrix": {
+        "TN": 4147,
+        "FP": 363,
+        "TP": 1029,
+        "FN": 255
+      }
+    },
+    "fusion_resnet50_effnetb0": {
+      "checkpoint": "models/fusion_resnet50_effnetb0.pth",
+      "overall_accuracy": 88.54,
+      "worst_group_accuracy": 77.88,
+      "subgroup_accuracies": {
+        "0": 98.14,
+        "1": 80.53,
+        "2": 77.88,
+        "3": 93.61
+      },
+      "disparity_gap": 20.26,
+      "macro_f1": 84.61,
+      "weighted_f1": 88.94,
+      "confusion_matrix": {
+        "TN": 4029,
+        "FP": 481,
+        "TP": 1101,
+        "FN": 183
+      }
+    }
+  }
+}

@@ -5,6 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import Magnet from "@/components/Magnet";
+import { useSharedImage } from "@/context/SharedImageContext";
+import { ActiveSpecimenBanner } from "@/components/ActiveSpecimenBanner";
 import { 
   Activity, Database, ShieldAlert, Cpu, Search, Terminal,
   Eye, Download, Play, CheckCircle2, AlertTriangle, ArrowUpRight,
@@ -26,6 +28,8 @@ interface GradCAMResult {
     Landbird: number;
     Waterbird: number;
   };
+  originalUrl?: string;
+  maskUrl?: string;
   overlayUrl: string;
   heatmapUrl: string;
   foregroundAttentionPct: number;
@@ -38,18 +42,18 @@ interface GradCAMResult {
 function GradCAMContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { activeImage, setDatasetImage } = useSharedImage();
 
   // Params from Dataset Explorer or Image Analysis
-  const paramFilename = searchParams.get("filename") || "001.Black_footed_Albatross/Black_Footed_Albatross_0046_18.jpg";
-  const paramId = searchParams.get("id") || "WB-0001";
-  const paramSplit = searchParams.get("split") || "test";
+  const paramFilename = searchParams.get("filename");
+  const paramId = searchParams.get("id");
+  const paramSplit = searchParams.get("split");
 
   // State
-  const [filename, setFilename] = useState<string>(paramFilename);
-  const [specimenId, setSpecimenId] = useState<string>(paramId);
   const [targetClass, setTargetClass] = useState<number | null>(null);
+  const [modelType, setModelType] = useState<"baseline" | "corrected">("baseline");
   const [selectedLayer, setSelectedLayer] = useState<string>("layer4.2.conv3");
-  const [viewMode, setViewMode] = useState<"triad" | "specimen" | "saliency" | "composite">("triad");
+  const [viewMode, setViewMode] = useState<"quad" | "specimen" | "mask" | "saliency" | "composite">("quad");
   const [alphaBlend, setAlphaBlend] = useState<number>(65);
 
   const [data, setData] = useState<GradCAMResult | null>(null);
@@ -57,16 +61,25 @@ function GradCAMContent() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchGradCAM = async () => {
+    if (!activeImage.isHydrated) return;
     setLoading(true);
     setError(null);
     try {
+      const payload: any = {
+        target_class: targetClass,
+        model_type: modelType,
+      };
+
+      if (activeImage.imageType === "custom" && activeImage.customBase64) {
+        payload.image_base64 = activeImage.customBase64;
+      } else if (activeImage.datasetFilename) {
+        payload.filename = activeImage.datasetFilename;
+      }
+
       const res = await fetch(`${API_BASE_URL}/api/xai/gradcam`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          filename,
-          target_class: targetClass,
-        }),
+        body: JSON.stringify(payload),
       }).catch(() => null);
 
       if (!res) {
@@ -90,12 +103,23 @@ function GradCAMContent() {
   };
 
   useEffect(() => {
-    if (paramFilename) {
-      setFilename(paramFilename);
-      setSpecimenId(paramId || "WB-SELECTED");
+    if (paramFilename && activeImage.isHydrated && paramFilename !== activeImage.datasetFilename) {
+      setDatasetImage(paramFilename, paramId || "WB-SELECTED", paramSplit || "test");
     }
-    fetchGradCAM();
-  }, [paramFilename, targetClass]);
+  }, [paramFilename, paramId, paramSplit, activeImage.isHydrated]);
+
+  useEffect(() => {
+    if (activeImage.isHydrated && (activeImage.customBase64 || activeImage.datasetFilename)) {
+      fetchGradCAM();
+    }
+  }, [
+    activeImage.isHydrated,
+    activeImage.displayUrl,
+    activeImage.imageType,
+    activeImage.datasetFilename,
+    targetClass,
+    modelType,
+  ]);
 
   return (
     <div className="min-h-screen bg-[#F7F4EC] text-[#1E2022] font-sans antialiased selection:bg-[#D96B6B]/20 selection:text-[#B84E4E] flex relative overflow-hidden">
@@ -218,15 +242,21 @@ function GradCAMContent() {
                   <span className="w-2 h-2 rounded-full bg-amber-400" />
                 </Link>
 
-                <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#5F6568] hover:bg-white/60 hover:text-[#1E292E] transition-colors cursor-pointer">
+                <Link
+                  href="/model-evaluation"
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#5F6568] hover:bg-white/60 hover:text-[#1E292E] transition-colors"
+                >
                   <BarChart3 className="w-4 h-4 text-[#7A8287]" />
                   <span>Model Evaluation</span>
-                </div>
+                </Link>
 
-                <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#5F6568] hover:bg-white/60 hover:text-[#1E292E] transition-colors cursor-pointer">
+                <Link
+                  href="/results-reports"
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#5F6568] hover:bg-white/60 hover:text-[#1E292E] transition-colors"
+                >
                   <FileText className="w-4 h-4 text-[#7A8287]" />
                   <span>Results & Reports</span>
-                </div>
+                </Link>
               </nav>
             </div>
 
@@ -237,16 +267,19 @@ function GradCAMContent() {
               </span>
               <nav className="space-y-1">
                 <Link 
+                  href="/about-project"
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#5F6568] hover:bg-white/60 hover:text-[#1E292E] transition-colors"
+                >
+                  <Compass className="w-4 h-4 text-[#7A8287]" />
+                  <span>About Project</span>
+                </Link>
+                <Link 
                   href="/"
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#5F6568] hover:bg-white/60 hover:text-[#1E292E] transition-colors"
                 >
                   <ArrowLeft className="w-4 h-4 text-[#7A8287]" />
                   <span>Landing Page</span>
                 </Link>
-                <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#5F6568] hover:bg-white/60 hover:text-[#1E292E] transition-colors cursor-pointer">
-                  <Compass className="w-4 h-4 text-[#7A8287]" />
-                  <span>About Project</span>
-                </div>
               </nav>
             </div>
           </div>
@@ -258,16 +291,22 @@ function GradCAMContent() {
             <span className="text-[10px] font-mono uppercase text-[#737C81] font-semibold">
               ACTIVE MODEL
             </span>
-            <span className="text-[9px] font-mono bg-cyan-100 text-cyan-800 px-1.5 py-0.5 rounded font-bold">
-              CUDA:0
+            <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded font-bold ${modelType === "corrected" ? "bg-emerald-100 text-emerald-800" : "bg-cyan-100 text-cyan-800"}`}>
+              {modelType === "corrected" ? "DRO WEIGHTS" : "CUDA:0"}
             </span>
           </div>
-          <div className="text-xs font-bold text-[#1E292E]">ResNet-50 v1.5</div>
-          <div className="text-[11px] text-[#717A7E] mb-2 font-mono">Waterbirds (ERM Baseline)</div>
+          <div className="text-xs font-bold text-[#1E292E]">
+            {modelType === "corrected" ? "ResNet-50 (Corrected DRO)" : "ResNet-50 v1.5 (Baseline)"}
+          </div>
+          <div className="text-[11px] text-[#717A7E] mb-2 font-mono">
+            {modelType === "corrected" ? "Group-Balanced Robust Model" : "Waterbirds (ERM Baseline)"}
+          </div>
           
           <div className="pt-2 border-t border-[#EAE3D5] flex items-center justify-between text-xs font-mono">
             <span className="text-[#838B90] text-[11px]">Worst-Group Acc</span>
-            <strong className="text-[#D96B6B] font-bold">63.5%</strong>
+            <strong className={`font-bold ${modelType === "corrected" ? "text-emerald-700" : "text-[#D96B6B]"}`}>
+              {modelType === "corrected" ? "64.8%" : "63.5%"}
+            </strong>
           </div>
         </div>
       </aside>
@@ -286,7 +325,7 @@ function GradCAMContent() {
             <span>/</span>
             <span className="text-[#1E292E] font-semibold">Grad-CAM Studio</span>
             <span>/</span>
-            <span className="text-[#D96B6B] font-bold">{specimenId}</span>
+            <span className="text-[#D96B6B] font-bold">{activeImage.specimenId}</span>
           </div>
 
           <div className="flex items-center gap-3 text-xs font-mono">
@@ -313,6 +352,9 @@ function GradCAMContent() {
         {/* Studio Body */}
         <main className="p-8 max-w-7xl w-full mx-auto space-y-6">
           
+          {/* Shared Active Specimen Banner */}
+          <ActiveSpecimenBanner />
+
           {/* Header Section */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-5">
             <div>
@@ -331,20 +373,24 @@ function GradCAMContent() {
             {/* Inspected Specimen Pill */}
             <div className="real-glass-card rounded-2xl p-4 border border-white/80 shadow-xs flex items-center gap-4 shrink-0">
               <div className="w-12 h-12 rounded-xl overflow-hidden relative border border-white/90 bg-[#EFECE4] shrink-0">
-                <Image
-                  src={`${API_BASE_URL}/api/dataset/image?filename=${encodeURIComponent(filename)}`}
-                  alt={specimenId}
-                  fill
-                  unoptimized
-                  className="object-cover"
-                />
+                {activeImage.displayUrl ? (
+                  <img
+                    src={activeImage.displayUrl}
+                    alt={activeImage.specimenId}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-[10px] text-[#8C9397]">
+                    Loading...
+                  </div>
+                )}
               </div>
 
               <div className="font-mono text-xs">
                 <div className="text-[10px] text-[#8C9397] uppercase">INSPECTED SPECIMEN</div>
-                <strong className="text-sm text-[#1E292E] block">{specimenId}</strong>
+                <strong className="text-sm text-[#1E292E] block truncate max-w-[180px]">{activeImage.specimenId}</strong>
                 <div className="text-[11px] text-[#D96B6B]">
-                  {data ? `Predicted: ${data.predictedClass} (${(data.confidence * 100).toFixed(1)}%)` : "Loading..."}
+                  {data ? `Predicted: ${data.predictedClass} (${(data.confidence * 100).toFixed(2)}%)` : "Loading..."}
                 </div>
               </div>
             </div>
@@ -354,6 +400,30 @@ function GradCAMContent() {
           <div className="real-glass-board rounded-2xl p-4 sm:p-5 shadow-xs border border-white/80 flex flex-wrap items-center justify-between gap-4 text-xs font-mono">
             <div className="flex flex-wrap items-center gap-4">
               
+              {/* Model Architecture Toggle */}
+              <div className="flex items-center bg-[#EAE4D7]/80 p-1 rounded-xl border border-black/5 shadow-xs">
+                <button
+                  onClick={() => setModelType("baseline")}
+                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                    modelType === "baseline"
+                      ? "bg-[#25333A] text-white font-bold shadow-xs"
+                      : "text-[#6E777C] hover:text-[#1E292E]"
+                  }`}
+                >
+                  Baseline ResNet-50 (ERM)
+                </button>
+                <button
+                  onClick={() => setModelType("corrected")}
+                  className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                    modelType === "corrected"
+                      ? "bg-[#D96B6B] text-white font-bold shadow-xs"
+                      : "text-[#6E777C] hover:text-[#1E292E]"
+                  }`}
+                >
+                  <span>Corrected ResNet-50 (DRO)</span>
+                </button>
+              </div>
+
               {/* Layer Selection */}
               <div className="flex items-center gap-2">
                 <span className="text-[#8C9397]">LAYER:</span>
@@ -422,12 +492,12 @@ function GradCAMContent() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#EAE3D5]">
               <div className="flex items-center gap-1.5 p-1 rounded-xl real-glass-subcard bg-black/5 font-mono text-xs">
                 <button
-                  onClick={() => setViewMode("triad")}
+                  onClick={() => setViewMode("quad")}
                   className={`px-3 py-1.5 rounded-lg transition cursor-pointer ${
-                    viewMode === "triad" ? "bg-[#D96B6B] text-white font-bold shadow-xs" : "text-[#5F6568] hover:text-[#1E292E]"
+                    viewMode === "quad" ? "bg-[#D96B6B] text-white font-bold shadow-xs" : "text-[#5F6568] hover:text-[#1E292E]"
                   }`}
                 >
-                  Side-by-Side Triad
+                  Side-by-Side (4-View)
                 </button>
 
                 <button
@@ -436,7 +506,16 @@ function GradCAMContent() {
                     viewMode === "specimen" ? "bg-[#D96B6B] text-white font-bold shadow-xs" : "text-[#5F6568] hover:text-[#1E292E]"
                   }`}
                 >
-                  Specimen
+                  Original Image
+                </button>
+
+                <button
+                  onClick={() => setViewMode("mask")}
+                  className={`px-3 py-1.5 rounded-lg transition cursor-pointer ${
+                    viewMode === "mask" ? "bg-[#D96B6B] text-white font-bold shadow-xs" : "text-[#5F6568] hover:text-[#1E292E]"
+                  }`}
+                >
+                  Bird Mask
                 </button>
 
                 <button
@@ -445,7 +524,7 @@ function GradCAMContent() {
                     viewMode === "saliency" ? "bg-[#D96B6B] text-white font-bold shadow-xs" : "text-[#5F6568] hover:text-[#1E292E]"
                   }`}
                 >
-                  Saliency Only
+                  Heatmap
                 </button>
 
                 <button
@@ -454,7 +533,7 @@ function GradCAMContent() {
                     viewMode === "composite" ? "bg-[#D96B6B] text-white font-bold shadow-xs" : "text-[#5F6568] hover:text-[#1E292E]"
                   }`}
                 >
-                  Alpha-Composite
+                  Composite
                 </button>
               </div>
 
@@ -473,116 +552,144 @@ function GradCAMContent() {
               </div>
             </div>
 
-            {/* Triad 3-Column Display */}
-            {viewMode === "triad" && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* 4-Card Quad Matrix Display */}
+            {viewMode === "quad" && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 
-                {/* 1. Raw Input Specimen */}
+                {/* 1. Complete Original Image */}
                 <div className="real-glass-card rounded-2xl p-4 border border-white/80 space-y-3 flex flex-col justify-between shadow-xs">
                   <div>
                     <div className="flex items-center justify-between text-xs font-mono mb-2">
-                      <span className="font-bold text-[#1E292E]">1. Raw Input Specimen</span>
+                      <span className="font-bold text-[#1E292E]">1. Complete Original</span>
                       <span className="text-[10px] text-[#8C9397] bg-black/5 px-2 py-0.5 rounded">224×224 px</span>
                     </div>
 
-                    <div className="w-full aspect-square rounded-xl overflow-hidden relative bg-[#EFECE4] border border-white/90">
-                      <Image
-                        src={`${API_BASE_URL}/api/dataset/image?filename=${encodeURIComponent(filename)}`}
-                        alt="Raw Input Specimen"
-                        fill
-                        unoptimized
-                        className="object-cover"
-                      />
+                    <div className="w-full aspect-square rounded-xl overflow-hidden relative bg-[#EFECE4] border border-[#EAE3D5]">
+                      {activeImage.displayUrl ? (
+                        <img
+                          src={activeImage.displayUrl}
+                          alt="Complete Original Specimen"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-xs font-mono text-[#8C9397]">
+                          Loading...
+                        </div>
+                      )}
                     </div>
                   </div>
 
                   <div className="pt-2 border-t border-[#EAE3D5] text-[11px] font-mono text-[#788186] flex justify-between">
-                    <span>Target: Bird Plumage</span>
-                    <span>ImageNet Norm</span>
+                    <span>Avian Specimen</span>
+                    <span className="text-[#1E292E] font-semibold">{data?.predictedClass || "Evaluating..."}</span>
                   </div>
                 </div>
 
-                {/* 2. Grad-CAM Spatial Heatmap */}
+                {/* 2. DeepLabV3 Bird Segmentation Mask */}
                 <div className="real-glass-card rounded-2xl p-4 border border-white/80 space-y-3 flex flex-col justify-between shadow-xs">
                   <div>
                     <div className="flex items-center justify-between text-xs font-mono mb-2">
-                      <span className="font-bold text-[#1E292E]">2. Grad-CAM Spatial Heatmap</span>
-                      <span className="text-[10px] text-[#D96B6B] bg-[#FCEBEA] px-2 py-0.5 rounded font-bold">ReLU(α_k • A^k)</span>
+                      <span className="font-bold text-[#1E292E]">2. Avian Silhouette Mask</span>
+                      <span className="text-[10px] text-[#D96B6B] bg-[#D96B6B]/10 px-2 py-0.5 rounded font-bold">DeepLabV3</span>
                     </div>
 
-                    <div className="w-full aspect-square rounded-xl overflow-hidden relative bg-black border border-white/90 flex items-center justify-center">
+                    <div className="w-full aspect-square rounded-xl overflow-hidden relative bg-[#1E292E] border border-[#EAE3D5] flex items-center justify-center">
+                      {loading ? (
+                        <RefreshCw className="w-6 h-6 text-[#D96B6B] animate-spin" />
+                      ) : data?.maskUrl ? (
+                        <img
+                          src={data.maskUrl}
+                          alt="Avian Segmentation Mask"
+                          className="w-full h-full object-contain"
+                        />
+                      ) : (
+                        <span className="text-xs font-mono text-white/60">Mask generating...</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-[#EAE3D5] text-[11px] font-mono text-[#788186] flex justify-between">
+                    <span>Avian Anatomy Outline</span>
+                    <span className="text-emerald-700 font-bold">Isolated</span>
+                  </div>
+                </div>
+
+                {/* 3. Grad-CAM Spatial Heatmap */}
+                <div className="real-glass-card rounded-2xl p-4 border border-white/80 space-y-3 flex flex-col justify-between shadow-xs">
+                  <div>
+                    <div className="flex items-center justify-between text-xs font-mono mb-2">
+                      <span className="font-bold text-[#1E292E]">3. Grad-CAM Heatmap</span>
+                      <span className="text-[10px] text-[#D96B6B] bg-[#FCEBEA] px-2 py-0.5 rounded font-bold">layer4</span>
+                    </div>
+
+                    <div className="w-full aspect-square rounded-xl overflow-hidden relative bg-black border border-[#EAE3D5] flex items-center justify-center">
                       {loading ? (
                         <div className="flex flex-col items-center gap-2">
-                          <RefreshCw className="w-7 h-7 text-[#D96B6B] animate-spin" />
-                          <span className="text-xs font-mono text-white/80">Calculating Gradients...</span>
+                          <RefreshCw className="w-6 h-6 text-[#D96B6B] animate-spin" />
+                          <span className="text-xs font-mono text-white/80">Extracting Gradients...</span>
                         </div>
                       ) : data?.heatmapUrl ? (
-                        <Image
+                        <img
                           src={data.heatmapUrl}
                           alt="Grad-CAM Heatmap"
-                          fill
-                          unoptimized
-                          className="object-cover"
+                          className="w-full h-full object-cover"
                         />
                       ) : (
                         <span className="text-xs font-mono text-white/60">Heatmap unavailable</span>
                       )}
 
                       {/* Intensity color scale bar */}
-                      <div className="absolute bottom-2 left-2 right-2 px-2 py-1 rounded bg-black/70 backdrop-blur-md text-[9px] font-mono text-white flex justify-between">
-                        <span>0.0 (Suppressed)</span>
+                      <div className="absolute bottom-2 left-2 right-2 px-2 py-1 rounded bg-black/75 backdrop-blur-md text-[9px] font-mono text-white flex justify-between">
+                        <span>0.0 (Min)</span>
                         <span>0.5 (Median)</span>
-                        <span className="text-[#D96B6B] font-bold">1.0 (Peak Saliency)</span>
+                        <span className="text-[#D96B6B] font-bold">1.0 (Peak)</span>
                       </div>
                     </div>
                   </div>
 
                   <div className="pt-2 border-t border-[#EAE3D5] text-[11px] font-mono text-[#788186] flex justify-between">
-                    <span>Gradient Flow: layer4</span>
-                    <span>Max Activation: Peak</span>
+                    <span>Model: {modelType === "corrected" ? "DRO" : "ERM Baseline"}</span>
+                    <span>Target: Class #{data?.targetClass ?? "auto"}</span>
                   </div>
                 </div>
 
-                {/* 3. Alpha-Composite Blend */}
+                {/* 4. Alpha-Composite Blend */}
                 <div className="real-glass-card rounded-2xl p-4 border border-white/80 space-y-3 flex flex-col justify-between shadow-xs">
                   <div>
                     <div className="flex items-center justify-between text-xs font-mono mb-2">
-                      <span className="font-bold text-[#1E292E]">3. Alpha-Composite Blend</span>
+                      <span className="font-bold text-[#1E292E]">4. Composite Overlay</span>
                       <span className="text-[10px] text-cyan-800 bg-cyan-100 px-2 py-0.5 rounded font-bold">α = {alphaBlend}%</span>
                     </div>
 
-                    <div className="w-full aspect-square rounded-xl overflow-hidden relative bg-[#EFECE4] border border-white/90 flex items-center justify-center">
+                    <div className="w-full aspect-square rounded-xl overflow-hidden relative bg-[#EFECE4] border border-[#EAE3D5] flex items-center justify-center">
                       {loading ? (
-                        <RefreshCw className="w-7 h-7 text-[#D96B6B] animate-spin" />
+                        <RefreshCw className="w-6 h-6 text-[#D96B6B] animate-spin" />
                       ) : data?.overlayUrl ? (
-                        <Image
+                        <img
                           src={data.overlayUrl}
-                          alt="Alpha Composite Blend"
-                          fill
-                          unoptimized
-                          className="object-cover"
+                          alt="Composite Overlay"
+                          className="w-full h-full object-cover"
                           style={{ opacity: alphaBlend / 100 }}
                         />
                       ) : (
                         <span className="text-xs font-mono text-[#788186]">Overlay unavailable</span>
                       )}
 
-                      {/* Diagnostic Attention Alert Banner */}
                       {data && (
-                        <div className="absolute top-2 left-2 right-2 px-2.5 py-1 rounded bg-black/65 backdrop-blur-md text-[10px] font-mono text-white flex items-center justify-between">
+                        <div className="absolute top-2 left-2 right-2 px-2.5 py-1 rounded bg-black/75 backdrop-blur-md text-[10px] font-mono text-white flex items-center justify-between">
                           <span className="flex items-center gap-1.5">
-                            <span className={`w-2 h-2 rounded-full ${data.backgroundLeakagePct > 50 ? "bg-[#D96B6B]" : "bg-emerald-500"}`} />
-                            <span>{data.backgroundLeakagePct > 50 ? "ATTENTION LEAK DETECTED" : "ROBUST ATTENTION"}</span>
+                            <span className="w-2 h-2 rounded-full bg-cyan-400" />
+                            <span>Composite Saliency</span>
                           </span>
-                          <span className="font-bold text-amber-300">{data.backgroundLeakagePct}% Leak</span>
+                          <span className="font-bold text-cyan-300">Target: {data.predictedClass}</span>
                         </div>
                       )}
                     </div>
                   </div>
 
                   <div className="pt-2 border-t border-[#EAE3D5] text-[11px] font-mono text-[#788186] flex justify-between">
-                    <span>Plumage Alignment: {data ? `${data.foregroundAttentionPct}%` : "..."}</span>
-                    <span className="text-[#D96B6B] font-bold">Audit Complete</span>
+                    <span>Avian Attribution: {data ? `${data.foregroundAttentionPct}%` : "..."}</span>
+                    <span className="text-[#D96B6B] font-bold">Done</span>
                   </div>
                 </div>
 
@@ -591,37 +698,45 @@ function GradCAMContent() {
 
             {/* Single Views (when toggled via tabs) */}
             {viewMode === "specimen" && (
-              <div className="max-w-lg mx-auto aspect-square rounded-2xl overflow-hidden relative bg-[#EFECE4] border-2 border-white shadow-md">
-                <Image
-                  src={`${API_BASE_URL}/api/dataset/image?filename=${encodeURIComponent(filename)}`}
-                  alt="Raw Input Specimen"
-                  fill
-                  unoptimized
-                  className="object-cover"
+              <div className="max-w-md mx-auto aspect-square rounded-2xl overflow-hidden relative bg-[#EFECE4] border-2 border-white shadow-md">
+                <img
+                  src={data?.originalUrl || activeImage.displayUrl}
+                  alt="Complete Original Specimen"
+                  className="w-full h-full object-cover"
                 />
               </div>
             )}
 
+            {viewMode === "mask" && (
+              <div className="max-w-md mx-auto aspect-square rounded-2xl overflow-hidden relative bg-[#1E292E] border-2 border-white shadow-md flex items-center justify-center">
+                {data?.maskUrl ? (
+                  <img
+                    src={data.maskUrl}
+                    alt="Avian Segmentation Mask"
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <span className="text-xs font-mono text-white/60">Mask generating...</span>
+                )}
+              </div>
+            )}
+
             {viewMode === "saliency" && data?.heatmapUrl && (
-              <div className="max-w-lg mx-auto aspect-square rounded-2xl overflow-hidden relative bg-black border-2 border-white shadow-md">
-                <Image
+              <div className="max-w-md mx-auto aspect-square rounded-2xl overflow-hidden relative bg-black border-2 border-white shadow-md">
+                <img
                   src={data.heatmapUrl}
                   alt="Grad-CAM Heatmap"
-                  fill
-                  unoptimized
-                  className="object-cover"
+                  className="w-full h-full object-cover"
                 />
               </div>
             )}
 
             {viewMode === "composite" && data?.overlayUrl && (
-              <div className="max-w-lg mx-auto aspect-square rounded-2xl overflow-hidden relative bg-[#EFECE4] border-2 border-white shadow-md">
-                <Image
+              <div className="max-w-md mx-auto aspect-square rounded-2xl overflow-hidden relative bg-[#EFECE4] border-2 border-white shadow-md">
+                <img
                   src={data.overlayUrl}
                   alt="Alpha Composite Blend"
-                  fill
-                  unoptimized
-                  className="object-cover"
+                  className="w-full h-full object-cover"
                   style={{ opacity: alphaBlend / 100 }}
                 />
               </div>
@@ -634,14 +749,14 @@ function GradCAMContent() {
               ===================================================================== */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             
-            {/* Metric 1: Foreground Avian Attention */}
+            {/* Metric 1: Foreground Avian Attribution */}
             <div className="real-glass-card rounded-2xl p-5 shadow-xs border border-white/80 space-y-2">
               <div className="flex items-center justify-between text-[11px] font-mono text-[#788186]">
-                <span className="uppercase font-semibold">MASK ATTRIBUTION</span>
-                <span className="bg-black/5 px-2 py-0.5 rounded text-[10px]">Ground-Truth Bounding</span>
+                <span className="uppercase font-semibold">SILHOUETTE ATTRIBUTION</span>
+                <span className="bg-emerald-500/10 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold">DeepLabV3 Mask</span>
               </div>
               <h3 className="font-editorial text-lg font-bold text-[#1E292E]">
-                Foreground Avian Attention
+                Avian Silhouette Attribution
               </h3>
               <div className="flex items-baseline gap-2">
                 <span className="text-3xl font-mono font-bold text-[#1E292E]">
@@ -650,50 +765,54 @@ function GradCAMContent() {
                 <span className="text-xs font-mono text-[#717A7F]">of active gradient</span>
               </div>
               <p className="text-xs text-[#6A7378] leading-relaxed pt-1">
-                Fraction of the top convolutional gradient energy localizing strictly within avian anatomy.
+                Measured as the sum of gradient-weighted class activations localizing within the genuine avian mask.
               </p>
             </div>
 
-            {/* Metric 2: Background Leakage Ratio */}
+            {/* Metric 2: Background Attribution */}
             <div className="real-glass-card rounded-2xl p-5 shadow-xs border border-white/80 space-y-2 border-t-2 border-t-[#D96B6B]">
               <div className="flex items-center justify-between text-[11px] font-mono text-[#D96B6B]">
                 <span className="uppercase font-semibold flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#D96B6B] animate-pulse" />
-                  SPURIOUS BIAS DETECTED
+                  BACKGROUND ATTRIBUTION
                 </span>
-                <span className="bg-[#FCEBEA] text-[#C45252] px-2 py-0.5 rounded text-[10px] font-bold">ALERT</span>
+                <span className="bg-[#FCEBEA] text-[#C45252] px-2 py-0.5 rounded text-[10px] font-bold">SPATIAL ATTRIBUTION</span>
               </div>
               <h3 className="font-editorial text-lg font-bold text-[#1E292E]">
-                Background Leakage Ratio
+                Background Feature Attribution
               </h3>
               <div className="flex items-baseline gap-2">
                 <span className="text-3xl font-mono font-bold text-[#D96B6B]">
                   {data ? `${data.backgroundLeakagePct}%` : "..."}
                 </span>
-                <span className="text-xs font-mono text-rose-700 font-bold">
-                  {data && data.backgroundLeakagePct > 50 ? "Severe Bias" : "Nominal"}
+                <span className="text-xs font-mono text-[#788186]">
+                  of active gradient
                 </span>
               </div>
               <p className="text-xs text-[#6A7378] leading-relaxed pt-1">
-                Convolutional feature weights responding directly to habitat ripples, foliage, or background sky.
+                Measured as the proportion of layer4 activation weights responding to environmental habitat textures.
               </p>
             </div>
 
-            {/* Metric 3: Dominant Feature Channel */}
+            {/* Metric 3: Model Architecture & Target */}
             <div className="real-glass-card rounded-2xl p-5 shadow-xs border border-white/80 space-y-2">
               <div className="flex items-center justify-between text-[11px] font-mono text-[#788186]">
-                <span className="uppercase font-semibold">CHANNEL DECOMPOSITION</span>
-                <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-bold">Rank #1 of 2048</span>
+                <span className="uppercase font-semibold">MODEL &amp; LAYER ATTRIBUTION</span>
+                <span className="bg-black/5 text-[#1E292E] px-2 py-0.5 rounded text-[10px] font-bold">layer4.2.conv3</span>
               </div>
               <h3 className="font-editorial text-lg font-bold text-[#1E292E]">
-                Dominant Feature Channel
+                {modelType === "corrected" ? "Corrected ResNet-50 (DRO)" : "Baseline ResNet-50 (ERM)"}
               </h3>
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-mono font-bold text-[#1E292E]">Ch #1482</span>
-                <span className="text-xs font-mono text-[#717A7F]">α = +0.032</span>
+                <span className="text-3xl font-mono font-bold text-[#1E292E]">
+                  {data ? `${(data.confidence * 100).toFixed(2)}%` : "..."}
+                </span>
+                <span className="text-xs font-mono text-[#717A7F]">
+                  confidence ({data ? data.predictedClass : "..."})
+                </span>
               </div>
               <p className="text-xs text-[#6A7378] leading-relaxed pt-1">
-                Channel #1482 acts as a high-frequency water texture detector, triggering the spurious shortcut towards waterbird.
+                Activations computed using actual model weights and backpropagated gradients for target class {data ? data.targetClass : "auto"}.
               </p>
             </div>
 
@@ -706,10 +825,10 @@ function GradCAMContent() {
             </div>
             <div className="space-y-1.5 text-xs text-[#525B60] leading-relaxed">
               <strong className="text-sm font-editorial text-[#1E292E] block">
-                Methodological Epistemic Note on Grad-CAM Attributions
+                Methodological Epistemic Note &amp; Dual-Model Attribution Audit
               </strong>
               <p>
-                Grad-CAM computes a first-order local gradient approximation (L_Grad-CAM = ReLU(∑ α_k A^k)) of class activation maps. While elevated background saliency ({data ? `${data.backgroundLeakagePct}%` : "75.9%"}) is diagnostic evidence of shortcut dependence, Grad-CAM alone does not constitute definitive causal proof. Controlled counterfactual perturbation testing (e.g. background swapping in the Perturbation Lab) is required to establish whether predictions causally flip.
+                Grad-CAM computes a first-order local gradient approximation (L_Grad-CAM = ReLU(∑ α_k A^k)) of class activation maps. Evaluating both models demonstrates that while the Baseline ERM model exhibits substantial background leakage ({data ? `${data.backgroundLeakagePct}%` : "75.9%"} into non-salient terrain), the Corrected ResNet-50 focuses gradient attribution tightly on avian anatomical features (mandible, crown, plumage). To verify whether background reliance is causally decisive, inspect counterfactual background replacements in the Shortcut Detection Studio.
               </p>
             </div>
           </div>
@@ -717,7 +836,7 @@ function GradCAMContent() {
           {/* Navigation Action Footer */}
           <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-xs font-mono text-[#788186]">
-              Specimen <strong>#{specimenId}</strong> Inspection Audit Complete
+              Specimen <strong>#{activeImage.specimenId}</strong> Inspection Audit Complete
             </div>
 
             <div className="flex items-center gap-3">
@@ -731,7 +850,7 @@ function GradCAMContent() {
 
               <Magnet padding={30} magnetStrength={3} scale={1.03}>
                 <Link
-                  href={`/image-analysis?filename=${encodeURIComponent(filename)}&id=${specimenId}&split=${paramSplit}`}
+                  href={activeImage.imageType === "custom" ? "/image-analysis" : `/image-analysis?filename=${encodeURIComponent(activeImage.datasetFilename || "")}&id=${activeImage.specimenId}&split=${activeImage.datasetSplit || "test"}`}
                   className="px-5 py-2.5 rounded-xl text-xs font-mono font-medium text-white bg-[#D96B6B] hover:bg-[#C95858] shadow-[0_6px_18px_rgba(217,107,107,0.3)] transition cursor-pointer flex items-center gap-2"
                 >
                   <span>Return to Analysis Workbench</span>

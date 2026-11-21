@@ -1,0 +1,350 @@
+{
+  "landbird_on_land_1": {
+    "id": "landbird_on_land_1",
+    "group": "Landbird On Land",
+    "groundTruth": "Landbird",
+    "groundTruthIdx": 0,
+    "originalUrl": "/api/xai/preview?name=landbird_on_land_1_original.png",
+    "maskUrl": "/api/xai/preview?name=landbird_on_land_1_mask.png",
+    "perturbedUrl": "/api/xai/preview?name=landbird_on_land_1_blurred.png",
+    "originalPrediction": {
+      "pred": 0,
+      "class": "Landbird",
+      "conf": 1.0,
+      "probabilities": {
+        "Landbird": 1.0,
+        "Waterbird": 0.0
+      }
+    },
+    "perturbedPrediction": {
+      "pred": 0,
+      "class": "Landbird",
+      "conf": 1.0,
+      "probabilities": {
+        "Landbird": 1.0,
+        "Waterbird": 0.0
+      }
+    },
+    "predictionFlipped": false,
+    "confidenceDelta": 0.0
+  },
+  "landbird_on_land_2": {
+    "id": "landbird_on_land_2",
+    "group": "Landbird On Land",
+    "groundTruth": "Landbird",
+    "groundTruthIdx": 0,
+    "originalUrl": "/api/xai/preview?name=landbird_on_land_2_original.png",
+    "maskUrl": "/api/xai/preview?name=landbird_on_land_2_mask.png",
+    "perturbedUrl": "/api/xai/preview?name=landbird_on_land_2_blurred.png",
+    "originalPrediction": {
+      "pred": 0,
+      "class": "Landbird",
+      "conf": 0.9732,
+      "probabilities": {
+        "Landbird": 0.9732,
+        "Waterbird": 0.0268
+      }
+    },
+    "perturbedPrediction": {
+      "pred": 0,
+      "class": "Landbird",
+      "conf": 0.9981,
+      "probabilities": {
+        "Landbird": 0.9981,
+        "Waterbird": 0.0019
+      }
+    },
+    "predictionFlipped": false,
+    "confidenceDelta": 0.0249
+  },
+  "landbird_on_land_3": {
+    "id": "landbird_on_land_3",
+    "group": "Landbird On Land",
+    "groundTruth": "Landbird",
+    "groundTruthIdx": 0,
+    "originalUrl": "/api/xai/preview?name=landbird_on_land_3_original.png",
+    "maskUrl": "/api/xai/preview?name=landbird_on_land_3_mask.png",
+    "perturbedUrl": "/api/xai/preview?name=landbird_on_land_3_blurred.png",
+    "originalPrediction": {
+      "pred": 0,
+      "class": "Landbird",
+      "conf": 0.9999,
+      "probabilities": {
+        "Landbird": 0.9999,
+        "Waterbird": 0.0001
+      }
+    },
+    "perturbedPrediction": {
+      "pred": 0,
+      "class": "Landbird",
+      "conf": 0.9998,
+      "probabilities": {
+        "Landbird": 0.9998,
+        "Waterbird": 0.0002
+      }
+    },
+    "predictionFlipped": false,
+    "confidenceDelta": -0.0001
+  },
+  "landbird_on_water_1": {
+    "id": "landbird_on_water_1",
+    "group": "Landbird On Water",
+    "groundTruth": "Landbird",
+    "groundTruthIdx": 0,
+    "originalUrl": "/api/xai/preview?name=landbird_on_water_1_original.png",
+    "maskUrl": "/api/xai/preview?name=landbird_on_water_1_mask.png",
+    "perturbedUrl": "/api/xai/preview?name=landbird_on_water_1_blurred.png",
+    "originalPrediction": {
+      "pred": 0,
+      "class": "Landbird",
+      "conf": 0.9867,
+      "probabilities": {
+        "Landbird": 0.9867,
+        "Waterbird": 0.0133
+      }
+    },
+    "perturbedPrediction": {
+      "pred": 0,
+      "class": "Landbird",
+      "conf": 0.9996,
+      "probabilities": {
+        "Landbird": 0.9996,
+        "Waterbird": 0.0004
+      }
+    },
+    "predictionFlipped": false,
+    "confidenceDelta": 0.0129
+  },
+  "landbird_on_water_2": {
+    "id": "landbird_on_water_2",
+    "group": "Landbird On Water",
+    "groundTruth": "Landbird",
+    "groundTruthIdx": 0,
+    "originalUrl": "/api/xai/preview?name=landbird_on_water_2_original.png",
+    "maskUrl": "/api/xai/preview?name=landbird_on_water_2_mask.png",
+    "perturbedUrl": "/api/xai/preview?name=landbird_on_water_2_blurred.png",
+    "originalPrediction": {
+      "pred": 0,
+      "class": "Landbird",
+      "conf": 0.9812,
+      "probabilities": {
+        "Landbird": 0.9812,
+        "Waterbird": 0.0188
+      }
+    },
+    "perturbedPrediction": {
+      "pred": 0,
+      "class": "Landbird",
+      "conf": 0.9999,
+      "probabilities": {
+        "Landbird": 0.9999,
+        "Waterbird": 0.0001
+      }
+    },
+    "predictionFlipped": false,
+    "confidenceDelta": 0.0187
+  },
+  "landbird_on_water_3": {
+    "id": "landbird_on_water_3",
+    "group": "Landbird On Water",
+    "groundTruth": "Landbird",
+    "groundTruthIdx": 0,
+    "originalUrl": "/api/xai/preview?name=landbird_on_water_3_original.png",
+    "maskUrl": "/api/xai/preview?name=landbird_on_water_3_mask.png",
+    "perturbedUrl": "/api/xai/preview?name=landbird_on_water_3_blurred.png",
+    "originalPrediction": {
+      "pred": 0,
+      "class": "Landbird",
+      "conf": 0.7103,
+      "probabilities": {
+        "Landbird": 0.7103,
+        "Waterbird": 0.2897
+      }
+    },
+    "perturbedPrediction": {
+      "pred": 0,
+      "class": "Landbird",
+      "conf": 0.9958,
+      "probabilities": {
+        "Landbird": 0.9958,
+        "Waterbird": 0.0042
+      }
+    },
+    "predictionFlipped": false,
+    "confidenceDelta": 0.2855
+  },
+  "waterbird_on_land_1": {
+    "id": "waterbird_on_land_1",
+    "group": "Waterbird On Land",
+    "groundTruth": "Waterbird",
+    "groundTruthIdx": 1,
+    "originalUrl": "/api/xai/preview?name=waterbird_on_land_1_original.png",
+    "maskUrl": "/api/xai/preview?name=waterbird_on_land_1_mask.png",
+    "perturbedUrl": "/api/xai/preview?name=waterbird_on_land_1_blurred.png",
+    "originalPrediction": {
+      "pred": 0,
+      "class": "Landbird",
+      "conf": 0.9177,
+      "probabilities": {
+        "Landbird": 0.9177,
+        "Waterbird": 0.0823
+      }
+    },
+    "perturbedPrediction": {
+      "pred": 0,
+      "class": "Landbird",
+      "conf": 0.9972,
+      "probabilities": {
+        "Landbird": 0.9972,
+        "Waterbird": 0.0028
+      }
+    },
+    "predictionFlipped": false,
+    "confidenceDelta": 0.0795
+  },
+  "waterbird_on_land_2": {
+    "id": "waterbird_on_land_2",
+    "group": "Waterbird On Land",
+    "groundTruth": "Waterbird",
+    "groundTruthIdx": 1,
+    "originalUrl": "/api/xai/preview?name=waterbird_on_land_2_original.png",
+    "maskUrl": "/api/xai/preview?name=waterbird_on_land_2_mask.png",
+    "perturbedUrl": "/api/xai/preview?name=waterbird_on_land_2_blurred.png",
+    "originalPrediction": {
+      "pred": 0,
+      "class": "Landbird",
+      "conf": 0.644,
+      "probabilities": {
+        "Landbird": 0.644,
+        "Waterbird": 0.356
+      }
+    },
+    "perturbedPrediction": {
+      "pred": 0,
+      "class": "Landbird",
+      "conf": 0.9997,
+      "probabilities": {
+        "Landbird": 0.9997,
+        "Waterbird": 0.0003
+      }
+    },
+    "predictionFlipped": false,
+    "confidenceDelta": 0.3557
+  },
+  "waterbird_on_land_3": {
+    "id": "waterbird_on_land_3",
+    "group": "Waterbird On Land",
+    "groundTruth": "Waterbird",
+    "groundTruthIdx": 1,
+    "originalUrl": "/api/xai/preview?name=waterbird_on_land_3_original.png",
+    "maskUrl": "/api/xai/preview?name=waterbird_on_land_3_mask.png",
+    "perturbedUrl": "/api/xai/preview?name=waterbird_on_land_3_blurred.png",
+    "originalPrediction": {
+      "pred": 1,
+      "class": "Waterbird",
+      "conf": 0.8703,
+      "probabilities": {
+        "Landbird": 0.1297,
+        "Waterbird": 0.8703
+      }
+    },
+    "perturbedPrediction": {
+      "pred": 1,
+      "class": "Waterbird",
+      "conf": 0.9951,
+      "probabilities": {
+        "Landbird": 0.0049,
+        "Waterbird": 0.9951
+      }
+    },
+    "predictionFlipped": false,
+    "confidenceDelta": 0.1248
+  },
+  "waterbird_on_water_1": {
+    "id": "waterbird_on_water_1",
+    "group": "Waterbird On Water",
+    "groundTruth": "Waterbird",
+    "groundTruthIdx": 1,
+    "originalUrl": "/api/xai/preview?name=waterbird_on_water_1_original.png",
+    "maskUrl": "/api/xai/preview?name=waterbird_on_water_1_mask.png",
+    "perturbedUrl": "/api/xai/preview?name=waterbird_on_water_1_blurred.png",
+    "originalPrediction": {
+      "pred": 1,
+      "class": "Waterbird",
+      "conf": 0.9869,
+      "probabilities": {
+        "Landbird": 0.0131,
+        "Waterbird": 0.9869
+      }
+    },
+    "perturbedPrediction": {
+      "pred": 0,
+      "class": "Landbird",
+      "conf": 0.7651,
+      "probabilities": {
+        "Landbird": 0.7651,
+        "Waterbird": 0.2349
+      }
+    },
+    "predictionFlipped": true,
+    "confidenceDelta": -0.2218
+  },
+  "waterbird_on_water_2": {
+    "id": "waterbird_on_water_2",
+    "group": "Waterbird On Water",
+    "groundTruth": "Waterbird",
+    "groundTruthIdx": 1,
+    "originalUrl": "/api/xai/preview?name=waterbird_on_water_2_original.png",
+    "maskUrl": "/api/xai/preview?name=waterbird_on_water_2_mask.png",
+    "perturbedUrl": "/api/xai/preview?name=waterbird_on_water_2_blurred.png",
+    "originalPrediction": {
+      "pred": 0,
+      "class": "Landbird",
+      "conf": 0.8453,
+      "probabilities": {
+        "Landbird": 0.8453,
+        "Waterbird": 0.1547
+      }
+    },
+    "perturbedPrediction": {
+      "pred": 0,
+      "class": "Landbird",
+      "conf": 0.9925,
+      "probabilities": {
+        "Landbird": 0.9925,
+        "Waterbird": 0.0075
+      }
+    },
+    "predictionFlipped": false,
+    "confidenceDelta": 0.1472
+  },
+  "waterbird_on_water_3": {
+    "id": "waterbird_on_water_3",
+    "group": "Waterbird On Water",
+    "groundTruth": "Waterbird",
+    "groundTruthIdx": 1,
+    "originalUrl": "/api/xai/preview?name=waterbird_on_water_3_original.png",
+    "maskUrl": "/api/xai/preview?name=waterbird_on_water_3_mask.png",
+    "perturbedUrl": "/api/xai/preview?name=waterbird_on_water_3_blurred.png",
+    "originalPrediction": {
+      "pred": 0,
+      "class": "Landbird",
+      "conf": 0.6217,
+      "probabilities": {
+        "Landbird": 0.6217,
+        "Waterbird": 0.3783
+      }
+    },
+    "perturbedPrediction": {
+      "pred": 0,
+      "class": "Landbird",
+      "conf": 0.9902,
+      "probabilities": {
+        "Landbird": 0.9902,
+        "Waterbird": 0.0098
+      }
+    },
+    "predictionFlipped": false,
+    "confidenceDelta": 0.3685
+  }
+}

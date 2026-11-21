@@ -281,15 +281,21 @@ export default function DatasetExplorerPage() {
                   <span className="w-2 h-2 rounded-full bg-amber-400" />
                 </Link>
 
-                <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#5F6568] hover:bg-white/60 hover:text-[#1E292E] transition-colors cursor-pointer">
+                <Link
+                  href="/model-evaluation"
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#5F6568] hover:bg-white/60 hover:text-[#1E292E] transition-colors"
+                >
                   <BarChart3 className="w-4 h-4 text-[#7A8287]" />
                   <span>Model Evaluation</span>
-                </div>
+                </Link>
 
-                <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#5F6568] hover:bg-white/60 hover:text-[#1E292E] transition-colors cursor-pointer">
+                <Link
+                  href="/results-reports"
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#5F6568] hover:bg-white/60 hover:text-[#1E292E] transition-colors"
+                >
                   <FileText className="w-4 h-4 text-[#7A8287]" />
                   <span>Results & Reports</span>
-                </div>
+                </Link>
               </nav>
             </div>
 
@@ -300,16 +306,19 @@ export default function DatasetExplorerPage() {
               </span>
               <nav className="space-y-1">
                 <Link 
+                  href="/about-project"
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#5F6568] hover:bg-white/60 hover:text-[#1E292E] transition-colors"
+                >
+                  <Compass className="w-4 h-4 text-[#7A8287]" />
+                  <span>About Project</span>
+                </Link>
+                <Link 
                   href="/"
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#5F6568] hover:bg-white/60 hover:text-[#1E292E] transition-colors"
                 >
                   <ArrowLeft className="w-4 h-4 text-[#7A8287]" />
                   <span>Landing Page</span>
                 </Link>
-                <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#5F6568] hover:bg-white/60 hover:text-[#1E292E] transition-colors cursor-pointer">
-                  <Compass className="w-4 h-4 text-[#7A8287]" />
-                  <span>About Project</span>
-                </div>
               </nav>
             </div>
           </div>

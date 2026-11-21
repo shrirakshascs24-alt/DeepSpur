@@ -6,12 +6,16 @@ import argparse
 from pathlib import Path
 from collections import defaultdict
 
-import cv2
 import numpy as np
 import torch
-from PIL import Image
+from PIL import Image, ImageFilter, ImageDraw
 from torchvision import transforms
 from torchvision.models import ResNet50_Weights
+
+try:
+    import cv2
+except ImportError:
+    cv2 = None
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
@@ -90,35 +94,45 @@ def load_test_groups():
     return groups
 
 
-def blur_background(image):
-    """Fast approximate foreground mask and background blur."""
-    rgb = np.asarray(image.convert("RGB").resize((224, 224)))
-    bgr = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
-    height, width = bgr.shape[:2]
+def blur_background(image, sigma=30, feather_radius=5):
+    """
+    Apply strong Gaussian blur (sigma=30) across the ENTIRE background
+    while preserving ONLY the avian silhouette sharp and unchanged.
+    Uses DeepLabV3 segmentation (cached) to isolate the bird from background.
+    """
+    orig_rgb = image.convert("RGB")
+    width, height = orig_rgb.size
 
-    # Approximate foreground using a central ellipse.
-    mask = np.zeros((height, width), dtype=np.uint8)
-    center = (width // 2, height // 2)
-    axes = (int(width * 0.43), int(height * 0.43)
-    )
-    cv2.ellipse(mask, center, axes, 0, 0, 360, 255, -1)
+    try:
+        from torchvision.models.segmentation import deeplabv3_resnet50, DeepLabV3_ResNet50_Weights
+        weights = DeepLabV3_ResNet50_Weights.DEFAULT
+        seg_model = deeplabv3_resnet50(weights=weights).to(DEVICE).eval()
+        t = weights.transforms()
+        input_t = t(orig_rgb).unsqueeze(0).to(DEVICE)
+        with torch.no_grad():
+            out = seg_model(input_t)["out"][0]
+            preds = out.argmax(0).byte().cpu().numpy()
+        bird_mask = (preds == 3)
+        if bird_mask.sum() < 250:
+            bird_mask = (preds != 0)
+        raw_mask = Image.fromarray((bird_mask.astype(np.float32) * 255).astype(np.uint8), mode='L')
+        mask_img = raw_mask.resize((width, height), Image.Resampling.BILINEAR)
+        mask_img = mask_img.filter(ImageFilter.MaxFilter(size=5))
+        feathered_mask = mask_img.filter(ImageFilter.GaussianBlur(radius=feather_radius))
+    except Exception:
+        # Fallback to center-biased mask if seg fails
+        mask = Image.new("L", (width, height), 0)
+        draw = ImageDraw.Draw(mask)
+        cx, cy = width // 2, height // 2
+        rx, ry = int(width * 0.22), int(height * 0.28)
+        draw.ellipse([cx - rx, cy - ry, cx + rx, cy + ry], fill=255)
+        feathered_mask = mask.filter(ImageFilter.GaussianBlur(radius=feather_radius))
 
-    # Smooth the mask edges.
-    foreground = cv2.GaussianBlur(
-        mask.astype(np.float32) / 255.0,
-        (21, 21), 0
-    )[..., None]
+    blurred_background = orig_rgb.filter(ImageFilter.GaussianBlur(radius=sigma))
+    perturbed_img = Image.composite(orig_rgb, blurred_background, feathered_mask)
+    mask_np = np.asarray(feathered_mask).astype(np.float32) / 255.0
 
-    blurred = cv2.GaussianBlur(bgr, (31, 31), 0)
-
-    result = (
-        bgr.astype(np.float32) * foreground
-        + blurred.astype(np.float32) * (1.0 - foreground)
-    )
-    result = np.clip(result, 0, 255).astype(np.uint8)
-
-    result_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
-    return Image.fromarray(result_rgb), foreground[..., 0]
+    return perturbed_img, mask_np
 
 
 def predict(model, image):

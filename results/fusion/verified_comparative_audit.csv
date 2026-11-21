@@ -1,0 +1,12 @@
+﻿metric,sample_basis,baseline_resnet50,corrected_resnet50,fusion_resnet50_effnetb0,fusion_delta_vs_baseline,fusion_delta_vs_corrected
+Overall Test Accuracy (%),"5,794 images",85.64,89.33,88.54,2.9,-0.79
+Worst-Group Accuracy (WGA) (%),642 images (Group 2),63.55,64.8,77.88,14.33,13.08
+Group 0: Landbird on Land (%),"2,255 images (y=0, c=0)",99.42,99.38,98.14,-1.29,-1.24
+Group 1: Landbird on Water (%),"2,255 images (y=0, c=1)",75.34,84.52,80.53,5.19,-3.99
+Group 2: Waterbird on Land (%) [Worst Group],"642 images (y=1, c=0)",63.55,64.8,77.88,14.33,13.08
+Group 3: Waterbird on Water (%),"642 images (y=1, c=1)",95.48,95.48,93.61,-1.87,-1.87
+Subgroup Disparity Gap (% pts),Max Group Acc - Min Group Acc,35.87,34.58,20.26,-15.62,-14.33
+Binary Macro F1-Score (%) [Arithmetic Mean],(F1_Class0 + F1_Class1) / 2,80.75,84.99,84.61,3.86,-0.38
+Weighted F1-Score (%),(N0*F1_0 + N1*F1_1) / Total,86.15,89.48,88.94,2.79,-0.54
+Class 0 (Landbird) F1-Score (%),"4,510 images",90.45,93.07,92.39,1.93,-0.68
+Class 1 (Waterbird) F1-Score (%),"1,284 images",71.05,76.91,76.83,5.78,-0.07

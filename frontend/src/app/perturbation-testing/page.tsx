@@ -73,15 +73,15 @@ export default function PerturbationTestingPage() {
   const gt = activeSample?.groundTruth ?? ((activeSample?.id ?? "").toLowerCase().includes("waterbird") ? "Waterbird" : "Landbird");
 
   const origClass = origPred?.class ?? (gt === "Waterbird" ? "Waterbird" : "Landbird");
-  const origConf = origPred ? (origPred.conf * 100).toFixed(1) : "97.1";
+  const origConf = origPred ? (origPred.conf * 100).toFixed(1) : (loading ? "..." : "--");
   const origMatch = origClass === gt;
 
   const pertClass = pertPred?.class ?? origClass;
-  const pertConf = pertPred ? (pertPred.conf * 100).toFixed(1) : "52.4";
+  const pertConf = pertPred ? (pertPred.conf * 100).toFixed(1) : (loading ? "..." : "--");
   const isFlipped = activeSample?.predictionFlipped ?? (origClass !== pertClass);
   const deltaVal = activeSample?.confidenceDelta !== undefined
     ? (activeSample.confidenceDelta * 100).toFixed(1)
-    : "-44.5";
+    : (origPred && pertPred ? ((pertPred.conf - origPred.conf) * 100).toFixed(1) : "--");
   const deltaSign = Number(deltaVal) > 0 ? "+" : "";
 
   const handleNextSample = () => {
@@ -231,7 +231,7 @@ export default function PerturbationTestingPage() {
                 </Link>
 
                 <Link
-                  href="/dashboard"
+                  href="/model-evaluation"
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#5F6568] hover:bg-white/60 hover:text-[#1E292E] transition-colors"
                 >
                   <BarChart3 className="w-4 h-4 text-[#7A8287]" />
@@ -239,11 +239,34 @@ export default function PerturbationTestingPage() {
                 </Link>
 
                 <Link
-                  href="/dashboard"
+                  href="/results-reports"
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#5F6568] hover:bg-white/60 hover:text-[#1E292E] transition-colors"
                 >
                   <FileText className="w-4 h-4 text-[#7A8287]" />
                   <span>Results & Reports</span>
+                </Link>
+              </nav>
+            </div>
+
+            {/* Group 4: System */}
+            <div>
+              <span className="text-[10px] font-mono font-bold tracking-wider text-[#989FA3] uppercase block mb-2 px-2">
+                SYSTEM
+              </span>
+              <nav className="space-y-1">
+                <Link 
+                  href="/about-project"
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#5F6568] hover:bg-white/60 hover:text-[#1E292E] transition-colors"
+                >
+                  <Compass className="w-4 h-4 text-[#7A8287]" />
+                  <span>About Project</span>
+                </Link>
+                <Link 
+                  href="/"
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#5F6568] hover:bg-white/60 hover:text-[#1E292E] transition-colors"
+                >
+                  <ArrowLeft className="w-4 h-4 text-[#7A8287]" />
+                  <span>Landing Page</span>
                 </Link>
               </nav>
             </div>

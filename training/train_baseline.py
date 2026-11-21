@@ -111,7 +111,14 @@ for epoch in range(epochs):
     correct = 0
     total = 0
 
-    for batch in train_loader:
+    for batch_index, batch in enumerate(train_loader, start=1):
+                # Show progress while training on CPU
+        if batch_index % 10 == 0:
+            print(
+                f"Epoch {epoch + 1}/{epochs} | "
+                f"Batch {batch_index}/{len(train_loader)}",
+                flush=True
+            )
 
         images = batch["image"].to(device)
         labels = batch["label"].to(device)
@@ -174,18 +181,17 @@ for epoch in range(epochs):
     )
 
 
-# ---------------------------------------------------------
 # Save model
-# ---------------------------------------------------------
-
-os.makedirs("../models", exist_ok=True)
-
-model_path = "../models/baseline_resnet50.pth"
-
-torch.save(
-    model.state_dict(),
-    model_path
+PROJECT_ROOT = os.path.dirname(
+    os.path.dirname(os.path.abspath(__file__))
 )
+
+model_path = os.path.join(
+    PROJECT_ROOT, "models", "baseline_resnet50.pth"
+)
+
+os.makedirs(os.path.dirname(model_path), exist_ok=True)
+torch.save(model.state_dict(), model_path)
 
 print("\nBaseline model saved!")
 print("Location:", model_path)
